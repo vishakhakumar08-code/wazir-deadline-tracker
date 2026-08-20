@@ -33,16 +33,16 @@
 6. **External Relations** (Corporate partnerships, sponsors, alumni)
 
 ### Assignees (Core Team)
-- **Avi** (President / Lead)
-- **Ishika** (Vice President)
-- **Nandini** (Head of Casebook)
-- **Simar** (Head of Events)
-- **Harshvardhan** (Head of ER)
-- **Animesh** (Apex Convenor)
-- **Vishakha** (Head of Editorial)
-- **Devanshi** (Head of PR)
-- **Somansha** (Strategy Associate)
-- **Akruti** (Consulting Analyst)
+- **Avi** 
+- **Ishika** 
+- **Nandini** 
+- **Simar** 
+- **Harshvardhan** 
+- **Animesh** 
+- **Vishakha** 
+- **Devanshi** 
+- **Somansha** 
+- **Akruti** 
 
 ---
 
