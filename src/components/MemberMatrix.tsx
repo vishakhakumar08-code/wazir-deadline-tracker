@@ -15,6 +15,7 @@ import {
   Briefcase,
   Layers,
   Sparkles,
+  UserX,
 } from 'lucide-react';
 import { Task, TaskStatus } from '@/types/task';
 
@@ -26,6 +27,10 @@ export const MemberMatrix: React.FC = () => {
     setSelectedTask,
     moveTaskStatus,
   } = useTaskContext();
+
+  const unassignedTasks = tasks.filter(
+    (t) => (!t.assignees || t.assignees.length === 0) && t.status !== 'Completed'
+  );
 
   return (
     <div className="space-y-6">
@@ -40,7 +45,7 @@ export const MemberMatrix: React.FC = () => {
               </h2>
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              Real-time deliverable allocation, load balancing, and deadline tracking across club leadership.
+              Real-time deliverable allocation, load balancing, and deadline tracking across junior club leadership.
             </p>
           </div>
 
@@ -49,6 +54,11 @@ export const MemberMatrix: React.FC = () => {
             <span className="text-slate-400">Total Active Tasks:</span>
             <span className="font-bold text-sky-400">
               {tasks.filter((t) => t.status !== 'Completed').length}
+            </span>
+            <span className="text-slate-600">|</span>
+            <span className="text-slate-400">Unassigned:</span>
+            <span className="font-bold text-amber-400">
+              {unassignedTasks.length}
             </span>
             <span className="text-slate-600">|</span>
             <span className="text-slate-400">Completed:</span>
@@ -81,6 +91,54 @@ export const MemberMatrix: React.FC = () => {
         </div>
       </div>
 
+      {/* Unassigned Deliverables Queue Alert (if any exist) */}
+      {unassignedTasks.length > 0 && (
+        <div className="p-4 rounded-2xl bg-amber-950/20 border border-amber-500/30 shadow-md">
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <div className="flex items-center gap-2">
+              <UserX className="w-4 h-4 text-amber-400" />
+              <h3 className="text-sm font-bold text-white">
+                Unassigned Deliverables ({unassignedTasks.length})
+              </h3>
+              <span className="text-[11px] text-amber-300/80">
+                Pending assignment to team members
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {unassignedTasks.map((task) => {
+              const vConfig = VERTICALS.find((v) => v.id === task.vertical) || VERTICALS[0];
+              const dInfo = getDeadlineInfo(task.deadline, task.status);
+
+              return (
+                <div
+                  key={task.id}
+                  onClick={() => setSelectedTask(task)}
+                  className={`p-3 rounded-xl bg-slate-900/90 hover:bg-slate-900 border border-slate-800 hover:border-amber-500/50 transition-all cursor-pointer ${dInfo.cardBorderHighlight}`}
+                >
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${vConfig.badge}`}>
+                      {task.vertical}
+                    </span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded border ${dInfo.badgeClass}`}>
+                      {dInfo.timeRemainingText}
+                    </span>
+                  </div>
+                  <h4 className="text-xs font-bold text-white truncate hover:text-amber-300">
+                    {task.title}
+                  </h4>
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800 text-[11px]">
+                    <span className="text-amber-400 font-medium">Unassigned</span>
+                    <span className="text-sky-400 font-semibold hover:underline">Click to Assign &rarr;</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Member Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         {ASSIGNEES.map((assignee) => {
@@ -96,7 +154,7 @@ export const MemberMatrix: React.FC = () => {
             workloadScore: 0,
           };
 
-          const memberTasks = tasks.filter((t) => t.assignees.includes(assignee.name));
+          const memberTasks = tasks.filter((t) => t.assignees && t.assignees.includes(assignee.name));
           const activeTasks = memberTasks.filter((t) => t.status !== 'Completed');
           const completedTasks = memberTasks.filter((t) => t.status === 'Completed');
 
@@ -237,7 +295,7 @@ export const MemberMatrix: React.FC = () => {
                     </div>
                   ) : (
                     <div className="py-4 text-center border border-dashed border-slate-800 rounded-xl bg-slate-950/30">
-                      <p className="text-xs text-slate-500">No active deliverables in queue</p>
+                      <p className="text-xs text-slate-500">No deliverables currently assigned</p>
                     </div>
                   )}
                 </div>

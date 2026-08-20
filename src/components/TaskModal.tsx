@@ -18,6 +18,8 @@ import {
   Sparkles,
   Link as LinkIcon,
   ListTodo,
+  UserX,
+  Users,
 } from 'lucide-react';
 
 export const TaskModal: React.FC = () => {
@@ -48,13 +50,13 @@ export const TaskModal: React.FC = () => {
   const [newResourceUrl, setNewResourceUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Set prefilled assignee when opened from Member Matrix
+  // Set prefilled assignee if explicitly initiated from Member Matrix, otherwise start completely empty/unassigned
   useEffect(() => {
     if (isCreateModalOpen) {
       if (prefilledAssignee) {
         setSelectedAssignees([prefilledAssignee]);
       } else {
-        setSelectedAssignees(['Avi']);
+        setSelectedAssignees([]);
       }
     }
   }, [isCreateModalOpen, prefilledAssignee]);
@@ -65,6 +67,10 @@ export const TaskModal: React.FC = () => {
     setSelectedAssignees((prev) =>
       prev.includes(name) ? prev.filter((a) => a !== name) : [...prev, name]
     );
+  };
+
+  const clearAllAssignees = () => {
+    setSelectedAssignees([]);
   };
 
   const handleAddSubtask = (e?: React.FormEvent) => {
@@ -108,10 +114,6 @@ export const TaskModal: React.FC = () => {
       showToast('Please enter a deliverable title', 'warning');
       return;
     }
-    if (selectedAssignees.length === 0) {
-      showToast('Please select at least one assignee', 'warning');
-      return;
-    }
 
     setIsSubmitting(true);
     try {
@@ -119,7 +121,7 @@ export const TaskModal: React.FC = () => {
         title: title.trim(),
         description: description.trim(),
         vertical,
-        assignees: selectedAssignees,
+        assignees: selectedAssignees, // Empty array if unassigned, or manually selected members
         status,
         priority,
         deadline: new Date(deadline).toISOString(),
@@ -130,6 +132,7 @@ export const TaskModal: React.FC = () => {
       // Reset form
       setTitle('');
       setDescription('');
+      setSelectedAssignees([]);
       setSubtasks([]);
       setResources([]);
       setIsCreateModalOpen(false);
@@ -236,11 +239,37 @@ export const TaskModal: React.FC = () => {
             </div>
           </div>
 
-          {/* Assignees Selection (Multi-select chips for all 10 members) */}
+          {/* Assignees Selection (Multi-select chips for all 10 members - Starts unassigned) */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-              Assignees ({selectedAssignees.length} selected) *
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5 text-amber-400" />
+                Assign Junior Team Members
+                {selectedAssignees.length === 0 ? (
+                  <span className="text-[11px] font-normal text-amber-400/90 lowercase">
+                    (currently unassigned)
+                  </span>
+                ) : (
+                  <span className="text-[11px] font-bold text-amber-300">
+                    ({selectedAssignees.length} selected)
+                  </span>
+                )}
+              </label>
+              {selectedAssignees.length > 0 && (
+                <button
+                  type="button"
+                  onClick={clearAllAssignees}
+                  className="text-[11px] text-slate-400 hover:text-red-400 transition-colors"
+                >
+                  Clear (Make Unassigned)
+                </button>
+              )}
+            </div>
+
+            <p className="text-[11px] text-slate-400 mb-2">
+              Select one or more team members to assign this deliverable. If none are selected, it will be marked as <strong>Unassigned</strong>.
+            </p>
+
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
               {ASSIGNEES.map((assignee) => {
                 const isSelected = selectedAssignees.includes(assignee.name);
@@ -251,7 +280,7 @@ export const TaskModal: React.FC = () => {
                     onClick={() => toggleAssignee(assignee.name)}
                     className={`p-2 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all text-left ${
                       isSelected
-                        ? 'bg-amber-500/20 border-amber-500/60 text-amber-300 shadow-sm'
+                        ? 'bg-amber-500/20 border-amber-500/60 text-amber-300 shadow-sm ring-1 ring-amber-400/40'
                         : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
                     }`}
                   >

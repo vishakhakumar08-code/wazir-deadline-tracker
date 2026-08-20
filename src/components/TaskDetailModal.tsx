@@ -21,6 +21,7 @@ import {
   Plus,
   ExternalLink,
   Save,
+  UserX,
 } from 'lucide-react';
 
 export const TaskDetailModal: React.FC = () => {
@@ -256,29 +257,45 @@ export const TaskDetailModal: React.FC = () => {
               Assigned Team Members ({selectedTask.assignees.length})
             </label>
             {!isEditing ? (
-              <div className="flex flex-wrap gap-2">
-                {selectedTask.assignees.map((assigneeName) => {
-                  const assignee = ASSIGNEES.find((a) => a.name === assigneeName);
-                  return (
-                    <div
-                      key={assigneeName}
-                      className="flex items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800"
-                    >
+              selectedTask.assignees && selectedTask.assignees.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {selectedTask.assignees.map((assigneeName) => {
+                    const assignee = ASSIGNEES.find((a) => a.name === assigneeName);
+                    return (
                       <div
-                        className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold ${
-                          assignee?.avatarBg || 'bg-slate-800'
-                        } ${assignee?.textColor || 'text-white'}`}
+                        key={assigneeName}
+                        className="flex items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800"
                       >
-                        {assignee?.initials || assigneeName.substring(0, 2).toUpperCase()}
+                        <div
+                          className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold ${
+                            assignee?.avatarBg || 'bg-slate-800'
+                          } ${assignee?.textColor || 'text-white'}`}
+                        >
+                          {assignee?.initials || assigneeName.substring(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-white">{assigneeName}</p>
+                          <p className="text-[10px] text-slate-400">{assignee?.role || 'Consultant'}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs font-bold text-white">{assigneeName}</p>
-                        <p className="text-[10px] text-slate-400">{assignee?.role || 'Consultant'}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-dashed border-slate-700">
+                  <div className="flex items-center gap-2 text-xs text-slate-400">
+                    <UserX className="w-4 h-4 text-amber-400" />
+                    <span>Currently Unassigned</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={startEditing}
+                    className="text-xs font-semibold text-sky-400 hover:text-sky-300"
+                  >
+                    + Assign Team Member
+                  </button>
+                </div>
+              )
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 {ASSIGNEES.map((assignee) => {

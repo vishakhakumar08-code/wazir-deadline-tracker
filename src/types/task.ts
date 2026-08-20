@@ -49,7 +49,7 @@ export type ViewMode = 'kanban' | 'matrix' | 'list';
 
 export interface TaskFilterState {
   vertical: Vertical | 'ALL';
-  assignee: Assignee | 'ALL';
+  assignee: Assignee | 'ALL' | 'UNASSIGNED';
   priority: TaskPriority | 'ALL';
   status: TaskStatus | 'ALL';
   urgency: 'ALL' | 'overdue' | 'due_soon' | 'upcoming';

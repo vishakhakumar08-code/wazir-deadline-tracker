@@ -46,10 +46,11 @@ export const FilterBar: React.FC = () => {
           <div className="relative flex-1 sm:flex-none">
             <select
               value={filters.assignee}
-              onChange={(e) => setFilter('assignee', e.target.value as Assignee | 'ALL')}
+              onChange={(e) => setFilter('assignee', e.target.value as any)}
               className="w-full sm:w-auto appearance-none bg-slate-900/80 border border-wazir-border rounded-xl px-3 py-2 pr-8 text-xs font-medium text-slate-300 hover:text-white focus:outline-none focus:border-sky-500 cursor-pointer"
             >
               <option value="ALL">All Assignees (10)</option>
+              <option value="UNASSIGNED">⚠️ Unassigned Only</option>
               {ASSIGNEES.map((assignee) => (
                 <option key={assignee.name} value={assignee.name}>
                   {assignee.name} ({assignee.role})

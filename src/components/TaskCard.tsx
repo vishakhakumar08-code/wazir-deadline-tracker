@@ -14,6 +14,7 @@ import {
   MoreHorizontal,
   ChevronRight,
   ExternalLink,
+  UserX,
 } from 'lucide-react';
 
 interface TaskCardProps {
@@ -141,23 +142,33 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onDragStart }) => {
           <span className="truncate">{deadlineInfo.timeRemainingText}</span>
         </div>
 
-        {/* Assignees Stack */}
-        <div className="flex items-center -space-x-1.5 overflow-hidden">
-          {task.assignees.map((assigneeName) => {
-            const assignee = ASSIGNEES.find((a) => a.name === assigneeName);
-            return (
-              <div
-                key={assigneeName}
-                className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border border-wazir-midnight shadow-sm ${
-                  assignee?.avatarBg || 'bg-slate-700'
-                } ${assignee?.textColor || 'text-white'}`}
-                title={`${assigneeName} (${assignee?.role || 'Member'})`}
-              >
-                {assignee?.initials || assigneeName.substring(0, 2).toUpperCase()}
-              </div>
-            );
-          })}
-        </div>
+        {/* Assignees Stack or Unassigned Badge */}
+        {task.assignees && task.assignees.length > 0 ? (
+          <div className="flex items-center -space-x-1.5 overflow-hidden">
+            {task.assignees.map((assigneeName) => {
+              const assignee = ASSIGNEES.find((a) => a.name === assigneeName);
+              return (
+                <div
+                  key={assigneeName}
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border border-wazir-midnight shadow-sm ${
+                    assignee?.avatarBg || 'bg-slate-700'
+                  } ${assignee?.textColor || 'text-white'}`}
+                  title={`${assigneeName} (${assignee?.role || 'Member'})`}
+                >
+                  {assignee?.initials || assigneeName.substring(0, 2).toUpperCase()}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div
+            className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 border border-dashed border-slate-700 text-[10px] font-medium text-slate-400"
+            title="Unassigned deliverable"
+          >
+            <UserX className="w-3 h-3 text-slate-500" />
+            <span>Unassigned</span>
+          </div>
+        )}
       </div>
 
       {/* Quick Move / Status Transition Toolbar on Hover */}

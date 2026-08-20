@@ -6,10 +6,10 @@ export const INITIAL_TASKS: Task[] = [
     title: 'Independence Day Special Newsletter Release',
     description: 'Finalize editorial layout, club President address, and op-ed graphics for the national edition.',
     vertical: 'Editorial',
-    assignees: ['Avi', 'Ishika', 'Vishakha'],
+    assignees: [], // Starts unassigned
     status: 'Review',
     priority: 'Urgent',
-    deadline: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(), // 4 hrs from now (Due in <24h -> Amber)
+    deadline: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
     subtasks: [
       { id: 'sub-1', title: 'Proofread draft articles & op-eds', completed: true },
       { id: 'sub-2', title: 'Design Figma graphics & banner', completed: true },
@@ -24,10 +24,10 @@ export const INITIAL_TASKS: Task[] = [
     title: 'Casebook 2026 - FinTech & Payments Market Deck',
     description: 'Compile secondary research, market sizing, unit economics, and Porter 5 forces for digital banking.',
     vertical: 'Casebook',
-    assignees: ['Nandini', 'Harshvardhan', 'Somansha'],
+    assignees: [], // Starts unassigned
     status: 'In Progress',
     priority: 'High',
-    deadline: new Date(Date.now() + 18 * 60 * 60 * 1000).toISOString(), // 18 hrs from now (Due in <24h -> Amber)
+    deadline: new Date(Date.now() + 18 * 60 * 60 * 1000).toISOString(),
     subtasks: [
       { id: 'sub-4', title: 'Compile secondary research on UPI 2.0', completed: true },
       { id: 'sub-5', title: 'Build valuation & market size exhibits', completed: false },
@@ -42,10 +42,10 @@ export const INITIAL_TASKS: Task[] = [
     title: 'Apex Strategy Case Competition Rulebook & Case Release',
     description: 'Draft problem statement with consulting partner firm and publish evaluation rubric on Unstop.',
     vertical: 'Apex',
-    assignees: ['Simar', 'Animesh', 'Akruti'],
+    assignees: [], // Starts unassigned
     status: 'In Progress',
     priority: 'Urgent',
-    deadline: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hrs ago (Overdue -> Red)
+    deadline: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
     subtasks: [
       { id: 'sub-7', title: 'Finalize problem statement with knowledge partner', completed: true },
       { id: 'sub-8', title: 'Configure submission portal & deadlines', completed: false },
@@ -60,10 +60,10 @@ export const INITIAL_TASKS: Task[] = [
     title: 'LinkedIn Campaign: "Consultant of the Month" Spotlight',
     description: 'Design carousel post highlighting alumni placement at MBB and boutique consulting practices.',
     vertical: 'Public Relations',
-    assignees: ['Devanshi', 'Akruti'],
+    assignees: [], // Starts unassigned
     status: 'Backlog',
     priority: 'Medium',
-    deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days from now (Later -> Green)
+    deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
     subtasks: [
       { id: 'sub-10', title: 'Collect alumni quote and bio', completed: false },
       { id: 'sub-11', title: 'Canva layout adhering to club brand guide', completed: false },
@@ -78,10 +78,10 @@ export const INITIAL_TASKS: Task[] = [
     title: 'Tier-1 Corporate Sponsorship Pitch Deck for Annual Conclave',
     description: 'Outreach deck targeting strategy consulting firms, venture funds, and FMCG corporate strategy teams.',
     vertical: 'External Relations',
-    assignees: ['Avi', 'Harshvardhan', 'Animesh'],
+    assignees: [], // Starts unassigned
     status: 'In Progress',
     priority: 'High',
-    deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days (Later -> Green)
+    deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
     subtasks: [
       { id: 'sub-13', title: 'Update past footprint & reach statistics', completed: true },
       { id: 'sub-14', title: 'Structure tiered sponsorship packages', completed: true },
@@ -96,7 +96,7 @@ export const INITIAL_TASKS: Task[] = [
     title: 'Consulting Workshop: Guesstimates & Market Sizing 101',
     description: 'Speaker invitation and campus amphitheatre booking for the upcoming junior cohort boot camp.',
     vertical: 'Events',
-    assignees: ['Ishika', 'Simar', 'Devanshi'],
+    assignees: [], // Starts unassigned
     status: 'Completed',
     priority: 'Medium',
     deadline: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
@@ -114,7 +114,7 @@ export const INITIAL_TASKS: Task[] = [
     title: 'M&A Valuation Case Study Archive Curation',
     description: 'Collate and sanitize real-world restructuring and buyout case notes from senior club alumni.',
     vertical: 'Casebook',
-    assignees: ['Vishakha', 'Somansha', 'Nandini'],
+    assignees: [], // Starts unassigned
     status: 'Backlog',
     priority: 'Low',
     deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),

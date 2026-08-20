@@ -296,8 +296,12 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // 2. Assignee filter
-      if (filters.assignee !== 'ALL' && !task.assignees.includes(filters.assignee)) {
-        return false;
+      if (filters.assignee === 'UNASSIGNED') {
+        if (task.assignees && task.assignees.length > 0) return false;
+      } else if (filters.assignee !== 'ALL') {
+        if (!task.assignees || !task.assignees.includes(filters.assignee)) {
+          return false;
+        }
       }
 
       // 3. Priority filter
@@ -376,7 +380,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Member Matrix Analytics computation (for all 10 assignees)
   const memberStats: MemberStats[] = useMemo(() => {
     return ASSIGNEES.map((assignee) => {
-      const memberTasks = tasks.filter((t) => t.assignees.includes(assignee.name));
+      const memberTasks = tasks.filter((t) => t.assignees && t.assignees.includes(assignee.name));
       const total = memberTasks.length;
       let inProgress = 0;
       let inReview = 0;

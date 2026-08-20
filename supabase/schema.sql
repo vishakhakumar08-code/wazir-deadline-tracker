@@ -65,14 +65,14 @@ CREATE INDEX IF NOT EXISTS idx_tasks_vertical ON public.tasks(vertical);
 CREATE INDEX IF NOT EXISTS idx_tasks_deadline ON public.tasks(deadline);
 CREATE INDEX IF NOT EXISTS idx_tasks_created_at ON public.tasks(created_at DESC);
 
--- 8. Seed Initial Data for Wazir Club (Replace or supplement as needed)
+-- 8. Seed Initial Data for Wazir Club (All start unassigned until explicitly assigned)
 INSERT INTO public.tasks (title, description, vertical, assignees, status, priority, deadline, subtasks, resources)
 VALUES
 (
     'Independence Day Special Newsletter Release',
     'Finalize the editorial layout, lead editorial piece, and club President address for the national edition.',
     'Editorial',
-    ARRAY['Avi', 'Ishika', 'Vishakha'],
+    ARRAY[]::TEXT[],
     'Review',
     'Urgent',
     NOW() + INTERVAL '4 hours',
@@ -87,7 +87,7 @@ VALUES
     'Casebook 2026 - FinTech & Payments Market Deck',
     'Comprehensive market sizing, unit economics, and Porter 5 Forces analysis for digital banking sector deep dive.',
     'Casebook',
-    ARRAY['Nandini', 'Harshvardhan', 'Somansha'],
+    ARRAY[]::TEXT[],
     'In Progress',
     'High',
     NOW() + INTERVAL '18 hours',
@@ -102,7 +102,7 @@ VALUES
     'Apex Strategy Case Competition Rulebook & Case Release',
     'Draft problem statement with consulting partner firm and publish evaluation rubric on Unstop / D2C.',
     'Apex',
-    ARRAY['Simar', 'Animesh', 'Akruti'],
+    ARRAY[]::TEXT[],
     'In Progress',
     'Urgent',
     NOW() + INTERVAL '22 hours',
@@ -117,7 +117,7 @@ VALUES
     'LinkedIn Campaign: "Consultant of the Month" Spotlight',
     'Design carousel post highlighting alumni placement at MBB and boutique consulting practices.',
     'Public Relations',
-    ARRAY['Devanshi', 'Akruti'],
+    ARRAY[]::TEXT[],
     'Backlog',
     'Medium',
     NOW() + INTERVAL '3 days',
@@ -132,7 +132,7 @@ VALUES
     'Tier-1 Corporate Sponsorship Pitch Deck for Annual Conclave',
     'Outreach deck targeting strategy consulting firms, venture funds, and FMCG corporate strategy teams.',
     'External Relations',
-    ARRAY['Avi', 'Harshvardhan', 'Animesh'],
+    ARRAY[]::TEXT[],
     'In Progress',
     'High',
     NOW() + INTERVAL '4 days',
@@ -147,7 +147,7 @@ VALUES
     'Consulting Workshop: Guesstimates & Market Sizing 101',
     'Speaker invitation and campus amphitheatre booking for the upcoming junior cohort boot camp.',
     'Events',
-    ARRAY['Ishika', 'Simar', 'Devanshi'],
+    ARRAY[]::TEXT[],
     'Completed',
     'Medium',
     NOW() - INTERVAL '1 day',
@@ -162,7 +162,7 @@ VALUES
     'M&A Valuation Case Study Archive Curation',
     'Collate and sanitize real-world restructuring and buyout case notes from senior club alumni.',
     'Casebook',
-    ARRAY['Vishakha', 'Somansha', 'Nandini'],
+    ARRAY[]::TEXT[],
     'Backlog',
     'Low',
     NOW() + INTERVAL '7 days',
