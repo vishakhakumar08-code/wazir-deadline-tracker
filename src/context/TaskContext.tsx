@@ -6,6 +6,7 @@ import { INITIAL_TASKS } from '@/lib/initialData';
 import { ASSIGNEES } from '@/lib/constants';
 import { getDeadlineInfo } from '@/lib/deadlineUtils';
 import {
+  generateUUID,
   getSupabaseCredentials,
   fetchTasksFromSupabase,
   createTaskInSupabase,
@@ -100,38 +101,53 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToast({ message, type });
     setTimeout(() => {
       setToast((prev) => (prev?.message === message ? null : prev));
-    }, 4000);
+    }, 5000);
   }, []);
 
-  // Initialize and load data
+  // Initialize and load data directly from Supabase
   const loadData = useCallback(async () => {
     const creds = getSupabaseCredentials();
     setIsSupabaseConfigured(creds.isConfigured);
 
     if (creds.isConfigured) {
       setRealtimeStatus('CONNECTING');
-      const supabaseTasks = await fetchTasksFromSupabase();
-      if (supabaseTasks && supabaseTasks.length > 0) {
-        setTasks(supabaseTasks);
-        setLastSyncTime(new Date());
-        setRealtimeStatus('SUBSCRIBED');
+      const { data, error } = await fetchTasksFromSupabase();
+
+      if (error) {
+        console.error('[Supabase Load Error]:', error);
+        setRealtimeStatus('ERROR');
+        showToast(`Supabase Connection: ${error.message || 'Failed to fetch tasks'}`, 'error');
+        // Fallback to local storage if available when network/credentials fail
+        if (typeof window !== 'undefined') {
+          const cached = localStorage.getItem('wazir_tasks_backup');
+          if (cached) {
+            try {
+              const parsed = JSON.parse(cached);
+              if (Array.isArray(parsed)) {
+                setTasks(parsed);
+              }
+            } catch (e) {}
+          }
+        }
         return;
-      } else if (supabaseTasks && supabaseTasks.length === 0) {
-        // Table exists but is empty -> load initial seed or empty
-        setTasks(INITIAL_TASKS);
+      }
+
+      if (data !== null) {
+        // Source of truth is the live database table (even if empty, do not re-seed mock data)
+        setTasks(data);
         setLastSyncTime(new Date());
         setRealtimeStatus('SUBSCRIBED');
         return;
       }
     }
 
-    // Fallback to local storage or INITIAL_TASKS
+    // Supabase not configured -> Local Sandbox Mode
     if (typeof window !== 'undefined') {
       const cached = localStorage.getItem('wazir_tasks_backup');
       if (cached) {
         try {
           const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed) && parsed.length > 0) {
+          if (Array.isArray(parsed)) {
             setTasks(parsed);
             setRealtimeStatus('LOCAL_DEMO');
             setLastSyncTime(new Date());
@@ -146,7 +162,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setTasks(INITIAL_TASKS);
     setRealtimeStatus('LOCAL_DEMO');
     setLastSyncTime(new Date());
-  }, []);
+  }, [showToast]);
 
   // Setup Supabase Real-time Listener
   useEffect(() => {
@@ -162,11 +178,13 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const channel = subscribeToTaskChanges(
       (inserted) => {
         setTasks((prev) => {
-          if (prev.some((t) => t.id === inserted.id)) return prev;
+          if (prev.some((t) => t.id === inserted.id)) {
+            return prev.map((t) => (t.id === inserted.id ? inserted : t));
+          }
           return [inserted, ...prev];
         });
         setLastSyncTime(new Date());
-        showToast(`⚡ New task added: "${inserted.title}"`, 'info');
+        showToast(`⚡ Live deliverable synced: "${inserted.title}"`, 'info');
       },
       (updated) => {
         setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
@@ -175,7 +193,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       (deletedId) => {
         setTasks((prev) => prev.filter((t) => t.id !== deletedId));
         setLastSyncTime(new Date());
-        showToast('Task removed', 'warning');
+        showToast('Deliverable removed', 'warning');
       },
       (status) => {
         if (status === 'SUBSCRIBED') {
@@ -197,7 +215,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Persist backup to LocalStorage for offline resilience
   useEffect(() => {
-    if (typeof window !== 'undefined' && tasks.length > 0) {
+    if (typeof window !== 'undefined') {
       localStorage.setItem('wazir_tasks_backup', JSON.stringify(tasks));
     }
   }, [tasks]);
@@ -217,24 +235,30 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsCreateModalOpen(true);
   };
 
-  // CRUD Operations with Optimistic Updates & Supabase Sync
+  // CRUD Operations with Direct Supabase Calls & Error Handling
   const addTask = async (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at'>) => {
+    const validUUID = generateUUID();
     const newTask: Task = {
       ...taskData,
-      id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+      id: validUUID,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
 
     // Optimistic UI update
     setTasks((prev) => [newTask, ...prev]);
-    showToast(`Created "${newTask.title}"`, 'success');
 
     if (isSupabaseConfigured) {
-      const created = await createTaskInSupabase(newTask);
-      if (created) {
-        setTasks((prev) => prev.map((t) => (t.id === newTask.id ? created : t)));
+      const { data, error } = await createTaskInSupabase(newTask);
+      if (error) {
+        console.error('[createTaskInSupabase failed]:', error);
+        showToast(`Failed to save to database: ${error.message || error.details || 'Check RLS policy'}`, 'error');
+      } else if (data) {
+        setTasks((prev) => prev.map((t) => (t.id === newTask.id ? data : t)));
+        showToast(`Saved "${data.title}" to Supabase!`, 'success');
       }
+    } else {
+      showToast(`Created "${newTask.title}" in sandbox`, 'success');
     }
   };
 
@@ -249,7 +273,11 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     if (isSupabaseConfigured) {
-      await updateTaskInSupabase(id, updates);
+      const { error } = await updateTaskInSupabase(id, updates);
+      if (error) {
+        console.error('[updateTaskInSupabase failed]:', error);
+        showToast(`Failed to update in database: ${error.message || 'Error saving changes'}`, 'error');
+      }
     }
   };
 
@@ -259,10 +287,17 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (selectedTask?.id === id) {
       setSelectedTask(null);
     }
-    showToast(`Deleted "${taskToDelete?.title || 'Task'}"`, 'warning');
 
     if (isSupabaseConfigured) {
-      await deleteTaskInSupabase(id);
+      const { error } = await deleteTaskInSupabase(id);
+      if (error) {
+        console.error('[deleteTaskInSupabase failed]:', error);
+        showToast(`Failed to delete from database: ${error.message || 'Error deleting row'}`, 'error');
+      } else {
+        showToast(`Deleted "${taskToDelete?.title || 'Deliverable'}"`, 'warning');
+      }
+    } else {
+      showToast(`Deleted "${taskToDelete?.title || 'Deliverable'}"`, 'warning');
     }
   };
 
@@ -328,7 +363,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const matchesTitle = task.title.toLowerCase().includes(q);
         const matchesDesc = task.description.toLowerCase().includes(q);
         const matchesVertical = task.vertical.toLowerCase().includes(q);
-        const matchesAssignees = task.assignees.some((a) => a.toLowerCase().includes(q));
+        const matchesAssignees = task.assignees && task.assignees.some((a) => a.toLowerCase().includes(q));
         if (!matchesTitle && !matchesDesc && !matchesVertical && !matchesAssignees) {
           return false;
         }

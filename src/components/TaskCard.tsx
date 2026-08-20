@@ -153,7 +153,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onDragStart }) => {
                   className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border border-wazir-midnight shadow-sm ${
                     assignee?.avatarBg || 'bg-slate-700'
                   } ${assignee?.textColor || 'text-white'}`}
-                  title={`${assigneeName} (${assignee?.role || 'Member'})`}
+                  title={assigneeName}
                 >
                   {assignee?.initials || assigneeName.substring(0, 2).toUpperCase()}
                 </div>

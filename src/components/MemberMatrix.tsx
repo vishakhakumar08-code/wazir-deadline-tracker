@@ -45,7 +45,7 @@ export const MemberMatrix: React.FC = () => {
               </h2>
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              Real-time deliverable allocation, load balancing, and deadline tracking across junior club leadership.
+              Real-time deliverable allocation, load balancing, and deadline tracking across the team.
             </p>
           </div>
 
@@ -72,7 +72,7 @@ export const MemberMatrix: React.FC = () => {
         <div className="mt-4 pt-3 border-t border-slate-800/80">
           <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1.5">
             <span>Workload Allocation Distribution</span>
-            <span>10 Active Leads &amp; Consultants</span>
+            <span>10 Team Members</span>
           </div>
           <div className="flex h-2.5 rounded-full overflow-hidden bg-slate-800">
             {memberStats.map((stat) => {
@@ -198,7 +198,6 @@ export const MemberMatrix: React.FC = () => {
                       <h3 className="text-base font-bold text-white font-heading">
                         {assignee.name}
                       </h3>
-                      <p className="text-xs text-slate-400 font-medium">{assignee.role}</p>
                     </div>
                   </div>
 

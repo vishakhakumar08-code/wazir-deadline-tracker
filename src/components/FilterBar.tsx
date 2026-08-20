@@ -53,7 +53,7 @@ export const FilterBar: React.FC = () => {
               <option value="UNASSIGNED">⚠️ Unassigned Only</option>
               {ASSIGNEES.map((assignee) => (
                 <option key={assignee.name} value={assignee.name}>
-                  {assignee.name} ({assignee.role})
+                  {assignee.name}
                 </option>
               ))}
             </select>

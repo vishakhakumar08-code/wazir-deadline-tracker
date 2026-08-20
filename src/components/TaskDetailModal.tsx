@@ -275,7 +275,6 @@ export const TaskDetailModal: React.FC = () => {
                         </div>
                         <div>
                           <p className="text-xs font-bold text-white">{assigneeName}</p>
-                          <p className="text-[10px] text-slate-400">{assignee?.role || 'Consultant'}</p>
                         </div>
                       </div>
                     );

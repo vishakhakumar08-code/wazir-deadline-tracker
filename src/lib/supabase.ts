@@ -5,6 +5,17 @@ let cachedClient: SupabaseClient | null = null;
 let cachedUrl: string | null = null;
 let cachedKey: string | null = null;
 
+export function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 export function getSupabaseCredentials(): { url: string; anonKey: string; isConfigured: boolean } {
   // 1. Check environment variables
   const envUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -69,9 +80,16 @@ export function getSupabaseClient(): SupabaseClient | null {
   }
 }
 
-export async function fetchTasksFromSupabase(): Promise<Task[] | null> {
+export interface SupabaseResponse<T> {
+  data: T | null;
+  error: any | null;
+}
+
+export async function fetchTasksFromSupabase(): Promise<SupabaseResponse<Task[]>> {
   const client = getSupabaseClient();
-  if (!client) return null;
+  if (!client) {
+    return { data: null, error: new Error('Supabase client is not configured') };
+  }
 
   try {
     const { data, error } = await client
@@ -80,11 +98,11 @@ export async function fetchTasksFromSupabase(): Promise<Task[] | null> {
       .order('deadline', { ascending: true });
 
     if (error) {
-      console.error('Error fetching tasks from Supabase:', error);
-      return null;
+      console.error('[Supabase fetch error]:', error);
+      return { data: null, error };
     }
 
-    return (data || []).map((row: any) => ({
+    const tasks: Task[] = (data || []).map((row: any) => ({
       id: row.id,
       title: row.title,
       description: row.description || '',
@@ -98,49 +116,77 @@ export async function fetchTasksFromSupabase(): Promise<Task[] | null> {
       created_at: row.created_at,
       updated_at: row.updated_at,
     }));
-  } catch (err) {
-    console.error('Unexpected error fetching from Supabase:', err);
-    return null;
+
+    return { data: tasks, error: null };
+  } catch (err: any) {
+    console.error('[Supabase fetch exception]:', err);
+    return { data: null, error: err };
   }
 }
 
-export async function createTaskInSupabase(task: Omit<Task, 'created_at' | 'updated_at'>): Promise<Task | null> {
+export async function createTaskInSupabase(task: Omit<Task, 'created_at' | 'updated_at'>): Promise<SupabaseResponse<Task>> {
   const client = getSupabaseClient();
-  if (!client) return null;
+  if (!client) {
+    return { data: null, error: new Error('Supabase client is not configured') };
+  }
 
   try {
+    const insertPayload: any = {
+      title: task.title,
+      description: task.description || '',
+      vertical: task.vertical,
+      assignees: task.assignees || [],
+      status: task.status,
+      priority: task.priority,
+      deadline: task.deadline,
+      subtasks: task.subtasks || [],
+      resources: task.resources || [],
+    };
+
+    // If task has a valid UUID format, pass it, otherwise let Supabase default to gen_random_uuid()
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (task.id && uuidRegex.test(task.id)) {
+      insertPayload.id = task.id;
+    }
+
     const { data, error } = await client
       .from('tasks')
-      .insert({
-        id: task.id,
-        title: task.title,
-        description: task.description,
-        vertical: task.vertical,
-        assignees: task.assignees,
-        status: task.status,
-        priority: task.priority,
-        deadline: task.deadline,
-        subtasks: task.subtasks,
-        resources: task.resources || [],
-      })
+      .insert(insertPayload)
       .select()
       .single();
 
     if (error) {
-      console.error('Error creating task in Supabase:', error);
-      return null;
+      console.error('[Supabase insert error]:', error);
+      return { data: null, error };
     }
 
-    return data as Task;
-  } catch (err) {
-    console.error('Exception creating task in Supabase:', err);
-    return null;
+    const createdTask: Task = {
+      id: data.id,
+      title: data.title,
+      description: data.description || '',
+      vertical: data.vertical,
+      assignees: Array.isArray(data.assignees) ? data.assignees : [],
+      status: data.status,
+      priority: data.priority,
+      deadline: data.deadline,
+      subtasks: Array.isArray(data.subtasks) ? data.subtasks : [],
+      resources: Array.isArray(data.resources) ? data.resources : [],
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+    };
+
+    return { data: createdTask, error: null };
+  } catch (err: any) {
+    console.error('[Supabase insert exception]:', err);
+    return { data: null, error: err };
   }
 }
 
-export async function updateTaskInSupabase(id: string, updates: Partial<Task>): Promise<boolean> {
+export async function updateTaskInSupabase(id: string, updates: Partial<Task>): Promise<SupabaseResponse<boolean>> {
   const client = getSupabaseClient();
-  if (!client) return false;
+  if (!client) {
+    return { data: null, error: new Error('Supabase client is not configured') };
+  }
 
   try {
     const payload: any = { ...updates };
@@ -153,19 +199,21 @@ export async function updateTaskInSupabase(id: string, updates: Partial<Task>): 
       .eq('id', id);
 
     if (error) {
-      console.error('Error updating task in Supabase:', error);
-      return false;
+      console.error('[Supabase update error]:', error);
+      return { data: false, error };
     }
-    return true;
-  } catch (err) {
-    console.error('Exception updating task in Supabase:', err);
-    return false;
+    return { data: true, error: null };
+  } catch (err: any) {
+    console.error('[Supabase update exception]:', err);
+    return { data: false, error: err };
   }
 }
 
-export async function deleteTaskInSupabase(id: string): Promise<boolean> {
+export async function deleteTaskInSupabase(id: string): Promise<SupabaseResponse<boolean>> {
   const client = getSupabaseClient();
-  if (!client) return false;
+  if (!client) {
+    return { data: null, error: new Error('Supabase client is not configured') };
+  }
 
   try {
     const { error } = await client
@@ -174,13 +222,13 @@ export async function deleteTaskInSupabase(id: string): Promise<boolean> {
       .eq('id', id);
 
     if (error) {
-      console.error('Error deleting task in Supabase:', error);
-      return false;
+      console.error('[Supabase delete error]:', error);
+      return { data: false, error };
     }
-    return true;
-  } catch (err) {
-    console.error('Exception deleting task in Supabase:', err);
-    return false;
+    return { data: true, error: null };
+  } catch (err: any) {
+    console.error('[Supabase delete exception]:', err);
+    return { data: false, error: err };
   }
 }
 

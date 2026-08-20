@@ -67,21 +67,20 @@ export const VERTICALS: {
 
 export const ASSIGNEES: {
   name: Assignee;
-  role: string;
   avatarBg: string;
   textColor: string;
   initials: string;
 }[] = [
-  { name: 'Avi', role: 'President / Lead', avatarBg: 'bg-amber-500/20', textColor: 'text-amber-300', initials: 'AV' },
-  { name: 'Ishika', role: 'Vice President', avatarBg: 'bg-rose-500/20', textColor: 'text-rose-300', initials: 'IS' },
-  { name: 'Nandini', role: 'Head of Casebook', avatarBg: 'bg-emerald-500/20', textColor: 'text-emerald-300', initials: 'NA' },
-  { name: 'Simar', role: 'Head of Events', avatarBg: 'bg-purple-500/20', textColor: 'text-purple-300', initials: 'SI' },
-  { name: 'Harshvardhan', role: 'Head of ER', avatarBg: 'bg-blue-500/20', textColor: 'text-blue-300', initials: 'HV' },
-  { name: 'Animesh', role: 'Apex Convenor', avatarBg: 'bg-cyan-500/20', textColor: 'text-cyan-300', initials: 'AN' },
-  { name: 'Vishakha', role: 'Head of Editorial', avatarBg: 'bg-sky-500/20', textColor: 'text-sky-300', initials: 'VK' },
-  { name: 'Devanshi', role: 'Head of PR', avatarBg: 'bg-pink-500/20', textColor: 'text-pink-300', initials: 'DV' },
-  { name: 'Somansha', role: 'Strategy Associate', avatarBg: 'bg-teal-500/20', textColor: 'text-teal-300', initials: 'SO' },
-  { name: 'Akruti', role: 'Consulting Analyst', avatarBg: 'bg-indigo-500/20', textColor: 'text-indigo-300', initials: 'AK' },
+  { name: 'Avi', avatarBg: 'bg-amber-500/20', textColor: 'text-amber-300', initials: 'AV' },
+  { name: 'Ishika', avatarBg: 'bg-rose-500/20', textColor: 'text-rose-300', initials: 'IS' },
+  { name: 'Nandini', avatarBg: 'bg-emerald-500/20', textColor: 'text-emerald-300', initials: 'NA' },
+  { name: 'Simar', avatarBg: 'bg-purple-500/20', textColor: 'text-purple-300', initials: 'SI' },
+  { name: 'Harshvardhan', avatarBg: 'bg-blue-500/20', textColor: 'text-blue-300', initials: 'HV' },
+  { name: 'Animesh', avatarBg: 'bg-cyan-500/20', textColor: 'text-cyan-300', initials: 'AN' },
+  { name: 'Vishakha', avatarBg: 'bg-sky-500/20', textColor: 'text-sky-300', initials: 'VK' },
+  { name: 'Devanshi', avatarBg: 'bg-pink-500/20', textColor: 'text-pink-300', initials: 'DV' },
+  { name: 'Somansha', avatarBg: 'bg-teal-500/20', textColor: 'text-teal-300', initials: 'SO' },
+  { name: 'Akruti', avatarBg: 'bg-indigo-500/20', textColor: 'text-indigo-300', initials: 'AK' },
 ];
 
 export const STATUSES: {
