@@ -247,7 +247,7 @@ export const TaskDetailModal: React.FC = () => {
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
                 className="w-full bg-slate-900 border border-wazir-border rounded-xl p-3 text-sm text-white focus:outline-none focus:border-amber-500"
-              />
+              ></textarea>
             )}
           </div>
 

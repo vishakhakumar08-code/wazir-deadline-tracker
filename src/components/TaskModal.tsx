@@ -239,6 +239,8 @@ export const TaskModal: React.FC = () => {
             </div>
           </div>
 
+          {/* Assignees Selection (Multi-select chips for all 10 members - Starts unassigned) */}
+          <div>
             <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
                 <Users className="w-3.5 h-3.5 text-amber-400" />
@@ -375,7 +377,7 @@ export const TaskModal: React.FC = () => {
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Outline deliverables, objectives, review steps, or dependencies..."
               className="w-full bg-slate-900 border border-wazir-border rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 resize-none font-normal"
-            />
+            ></textarea>
           </div>
 
           {/* Checklist / Subtasks Builder */}
