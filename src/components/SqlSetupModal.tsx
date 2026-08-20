@@ -167,12 +167,17 @@ export const SqlSetupModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-3xl bg-wazir-card border border-wazir-border rounded-3xl shadow-2xl overflow-hidden my-8">
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+      <div className="relative w-full max-w-3xl bg-wazir-card border-t md:border border-wazir-border rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] md:max-h-[calc(100vh-80px)] my-0 md:my-8 flex flex-col">
+        {/* Mobile Swipe Handle Indicator */}
+        <div className="md:hidden flex justify-center pt-2.5 pb-1 bg-slate-900/80">
+          <div className="w-12 h-1.5 rounded-full bg-slate-700" />
+        </div>
+
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-wazir-border/60 bg-slate-900/80">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5 border-b border-wazir-border/60 bg-slate-900/80 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-400">
+            <div className="w-10 h-10 rounded-xl bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-400 shrink-0">
               <Database className="w-5 h-5" />
             </div>
             <div>

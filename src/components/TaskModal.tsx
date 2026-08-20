@@ -144,19 +144,24 @@ export const TaskModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-wazir-card border border-wazir-border rounded-3xl shadow-2xl overflow-hidden my-8">
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
+      <div className="relative w-full max-w-2xl bg-wazir-card border-t md:border border-wazir-border rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] md:max-h-[calc(100vh-80px)] my-0 md:my-8 flex flex-col">
+        {/* Mobile Swipe Handle Indicator */}
+        <div className="md:hidden flex justify-center pt-2.5 pb-1 bg-slate-900/80">
+          <div className="w-12 h-1.5 rounded-full bg-slate-700" />
+        </div>
+
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-wazir-border/60 bg-slate-900/60">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5 border-b border-wazir-border/60 bg-slate-900/60 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white font-heading">
+              <h3 className="text-base sm:text-lg font-bold text-white font-heading">
                 Create New Deliverable
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-[11px] sm:text-xs text-slate-400">
                 Wazir - The Strategy &amp; Consulting Club
               </p>
             </div>
@@ -164,14 +169,14 @@ export const TaskModal: React.FC = () => {
 
           <button
             onClick={() => setIsCreateModalOpen(false)}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto scrollbar-thin">
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-5 overflow-y-auto scrollbar-thin">
           {/* Title */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
@@ -184,7 +189,7 @@ export const TaskModal: React.FC = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Casebook 2026 - M&A Strategy Sector Deck"
-              className="w-full bg-slate-900 border border-wazir-border rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all font-medium"
+              className="w-full bg-slate-900 border border-wazir-border rounded-xl px-4 py-3 sm:py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all font-medium min-h-[44px]"
             />
           </div>
 
@@ -198,7 +203,7 @@ export const TaskModal: React.FC = () => {
               <select
                 value={vertical}
                 onChange={(e) => setVertical(e.target.value as Vertical)}
-                className="w-full bg-slate-900 border border-wazir-border rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-sky-500 font-medium cursor-pointer"
+                className="w-full bg-slate-900 border border-wazir-border rounded-xl px-3.5 py-3 sm:py-2.5 text-sm text-white focus:outline-none focus:border-sky-500 font-medium cursor-pointer min-h-[44px]"
               >
                 {VERTICALS.map((v) => (
                   <option key={v.id} value={v.id}>
@@ -221,7 +226,7 @@ export const TaskModal: React.FC = () => {
                       key={p.id}
                       type="button"
                       onClick={() => setPriority(p.id)}
-                      className={`py-2 px-1 rounded-xl text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 ${
+                      className={`py-2.5 sm:py-2 px-1 rounded-xl text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 min-h-[44px] cursor-pointer ${
                         isSelected
                           ? `${p.badge} ring-2 ring-amber-400/50 shadow-md`
                           : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
@@ -239,7 +244,7 @@ export const TaskModal: React.FC = () => {
             </div>
           </div>
 
-          {/* Assignees Selection (Multi-select chips for all 10 members - Starts unassigned) */}
+          {/* Assignees Selection */}
           <div>
             <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
@@ -266,16 +271,16 @@ export const TaskModal: React.FC = () => {
                       setSelectedAssignees(ASSIGNEES.map((a) => a.name));
                     }
                   }}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 border transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 border transition-all cursor-pointer min-h-[38px] ${
                     selectedAssignees.length === ASSIGNEES.length
                       ? 'bg-amber-500 text-wazir-midnight border-amber-400 shadow-md shadow-amber-500/30'
                       : 'bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border-sky-500/40'
                   }`}
                 >
-                  <Users className="w-3 h-3" />
+                  <Users className="w-3.5 h-3.5" />
                   <span>
                     {selectedAssignees.length === ASSIGNEES.length
-                      ? '✓ Entire Team Selected (Deselect)'
+                      ? '✓ Entire Team Selected'
                       : '⚡ Select All / Entire Team'}
                   </span>
                 </button>
@@ -283,7 +288,7 @@ export const TaskModal: React.FC = () => {
                   <button
                     type="button"
                     onClick={clearAllAssignees}
-                    className="text-[11px] text-slate-400 hover:text-red-400 transition-colors"
+                    className="text-xs text-slate-400 hover:text-red-400 transition-colors py-1 px-2"
                   >
                     Clear
                   </button>
@@ -303,14 +308,14 @@ export const TaskModal: React.FC = () => {
                     key={assignee.name}
                     type="button"
                     onClick={() => toggleAssignee(assignee.name)}
-                    className={`p-2 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all text-left ${
+                    className={`p-2.5 sm:p-2 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all text-left min-h-[44px] cursor-pointer ${
                       isSelected
                         ? 'bg-amber-500/20 border-amber-500/60 text-amber-300 shadow-sm ring-1 ring-amber-400/40'
                         : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
                     }`}
                   >
                     <div
-                      className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold ${
+                      className={`w-6 h-6 sm:w-5 sm:h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 ${
                         isSelected ? 'bg-amber-400 text-wazir-midnight' : assignee.avatarBg
                       }`}
                     >
@@ -325,7 +330,7 @@ export const TaskModal: React.FC = () => {
 
           {/* Deadline Date & Time Picker + Quick Presets */}
           <div>
-            <div className="flex items-center justify-between mb-1.5">
+            <div className="flex flex-wrap items-center justify-between gap-1.5 mb-1.5">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
                 Deadline Date &amp; Time *
               </label>
@@ -334,21 +339,21 @@ export const TaskModal: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setQuickDeadline(6)}
-                  className="text-[10px] px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700"
+                  className="text-[11px] px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 cursor-pointer min-h-[32px]"
                 >
                   In 6 hrs
                 </button>
                 <button
                   type="button"
                   onClick={() => setQuickDeadline(24)}
-                  className="text-[10px] px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700"
+                  className="text-[11px] px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 cursor-pointer min-h-[32px]"
                 >
                   In 24 hrs
                 </button>
                 <button
                   type="button"
                   onClick={() => setQuickDeadline(72)}
-                  className="text-[10px] px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700"
+                  className="text-[11px] px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 cursor-pointer min-h-[32px]"
                 >
                   In 3 days
                 </button>
@@ -361,7 +366,7 @@ export const TaskModal: React.FC = () => {
                 required
                 value={deadline}
                 onChange={(e) => setDeadline(e.target.value)}
-                className="w-full bg-slate-900 border border-wazir-border rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 font-medium"
+                className="w-full bg-slate-900 border border-wazir-border rounded-xl pl-10 pr-4 py-3 sm:py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 font-medium min-h-[44px]"
               />
             </div>
           </div>
@@ -376,7 +381,7 @@ export const TaskModal: React.FC = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Outline deliverables, objectives, review steps, or dependencies..."
-              className="w-full bg-slate-900 border border-wazir-border rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 resize-none font-normal"
+              className="w-full bg-slate-900 border border-wazir-border rounded-xl px-4 py-3 sm:py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 resize-none font-normal"
             ></textarea>
           </div>
 
@@ -401,12 +406,12 @@ export const TaskModal: React.FC = () => {
                   }
                 }}
                 placeholder="Add sub-deliverable or milestone..."
-                className="flex-1 bg-slate-900 border border-wazir-border rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                className="flex-1 bg-slate-900 border border-wazir-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 min-h-[44px]"
               />
               <button
                 type="button"
                 onClick={() => handleAddSubtask()}
-                className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 flex items-center gap-1"
+                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 flex items-center gap-1 min-h-[44px] cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 Add
@@ -418,13 +423,13 @@ export const TaskModal: React.FC = () => {
                 {subtasks.map((st) => (
                   <div
                     key={st.id}
-                    className="flex items-center justify-between gap-2 bg-slate-900 p-2 rounded-lg border border-slate-800 text-xs text-slate-200"
+                    className="flex items-center justify-between gap-2 bg-slate-900 p-2.5 rounded-lg border border-slate-800 text-xs text-slate-200"
                   >
                     <span className="truncate">{st.title}</span>
                     <button
                       type="button"
                       onClick={() => handleRemoveSubtask(st.id)}
-                      className="text-slate-500 hover:text-red-400 p-1"
+                      className="text-slate-500 hover:text-red-400 p-1.5 min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -439,13 +444,13 @@ export const TaskModal: React.FC = () => {
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
               Initial Workflow Column
             </label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {STATUSES.map((st) => (
                 <button
                   key={st.id}
                   type="button"
                   onClick={() => setStatus(st.id)}
-                  className={`py-2 px-2 rounded-xl text-xs font-semibold border transition-all ${
+                  className={`py-2.5 sm:py-2 px-2 rounded-xl text-xs font-semibold border transition-all min-h-[44px] cursor-pointer ${
                     status === st.id
                       ? 'bg-sky-500/20 border-sky-500 text-sky-300 shadow-sm'
                       : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
@@ -458,18 +463,18 @@ export const TaskModal: React.FC = () => {
           </div>
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-wazir-border/60">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-wazir-border/60 pb-2">
             <button
               type="button"
               onClick={() => setIsCreateModalOpen(false)}
-              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors"
+              className="px-4 py-3 sm:py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold transition-colors min-h-[44px] cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-wazir-midnight font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
+              className="px-6 py-3 sm:py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-wazir-midnight font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all cursor-pointer min-h-[44px]"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
               <span>{isSubmitting ? 'Creating...' : 'Create Deliverable'}</span>

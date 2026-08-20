@@ -412,7 +412,7 @@ export const AttendanceTracker: React.FC = () => {
                       <button
                         key={statusItem.id}
                         onClick={() => handleSetStatus(assignee.name, statusItem.id)}
-                        className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 border cursor-pointer ${
+                        className={`py-2.5 px-2 sm:px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 border cursor-pointer min-h-[44px] ${
                           isSelected
                             ? `${statusItem.buttonActive} ring-2 ring-white/20`
                             : 'bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-white border-slate-800 hover:border-slate-700'

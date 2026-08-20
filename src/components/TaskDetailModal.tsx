@@ -99,8 +99,13 @@ export const TaskDetailModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-wazir-card border border-wazir-border rounded-3xl shadow-2xl overflow-hidden my-8">
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
+      <div className="relative w-full max-w-2xl bg-wazir-card border-t md:border border-wazir-border rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] md:max-h-[calc(100vh-80px)] my-0 md:my-8 flex flex-col">
+        {/* Mobile Swipe Handle Indicator */}
+        <div className="md:hidden flex justify-center pt-2.5 pb-1 bg-slate-900/80">
+          <div className="w-12 h-1.5 rounded-full bg-slate-700" />
+        </div>
+
         {/* Top Urgency Color Bar */}
         <div className={`h-2 w-full ${
           deadlineInfo.urgency === 'overdue'
@@ -113,7 +118,7 @@ export const TaskDetailModal: React.FC = () => {
         }`} />
 
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-wazir-border/60 bg-slate-900/60 flex items-center justify-between gap-3">
+        <div className="px-5 sm:px-6 py-3.5 sm:py-4 border-b border-wazir-border/60 bg-slate-900/60 flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2">
             <span className={`text-xs font-bold px-2.5 py-1 rounded-md border ${verticalConfig.badge}`}>
               {selectedTask.vertical}
