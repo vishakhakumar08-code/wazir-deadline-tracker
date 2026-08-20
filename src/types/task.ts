@@ -45,7 +45,7 @@ export interface Task {
   updated_at?: string;
 }
 
-export type ViewMode = 'kanban' | 'matrix' | 'list';
+export type ViewMode = 'kanban' | 'matrix' | 'attendance';
 
 export interface TaskFilterState {
   vertical: Vertical | 'ALL';
@@ -66,4 +66,34 @@ export interface MemberStats {
   overdue: number;
   dueSoon: number;
   workloadScore: number; // calculated load index
+}
+
+// Attendance Tracker Types
+export type AttendanceStatus =
+  | 'Present'
+  | 'Tardy'
+  | 'Excused Tardy'
+  | 'Absent'
+  | 'Excused Absence';
+
+export interface AttendanceRecord {
+  id?: string;
+  member_name: Assignee;
+  date: string; // 'YYYY-MM-DD'
+  status: AttendanceStatus;
+  notes?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface DailyAttendanceSummary {
+  date: string;
+  total: number;
+  present: number;
+  tardy: number;
+  excusedTardy: number;
+  absent: number;
+  excusedAbsent: number;
+  unmarked: number;
+  attendanceRate: number;
 }

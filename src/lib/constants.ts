@@ -1,4 +1,4 @@
-import { Vertical, Assignee, TaskStatus, TaskPriority } from '@/types/task';
+import { Vertical, Assignee, TaskStatus, TaskPriority, AttendanceStatus } from '@/types/task';
 
 export const VERTICALS: {
   id: Vertical;
@@ -159,5 +159,55 @@ export const PRIORITIES: {
     color: 'text-slate-400',
     badge: 'bg-slate-700/40 text-slate-300 border-slate-600/40',
     iconName: 'Minus',
+  },
+];
+
+export const ATTENDANCE_STATUSES: {
+  id: AttendanceStatus;
+  label: string;
+  badge: string;
+  buttonActive: string;
+  dotColor: string;
+  description: string;
+}[] = [
+  {
+    id: 'Present',
+    label: 'Present',
+    badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+    buttonActive: 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30 border-emerald-500',
+    dotColor: 'bg-emerald-400',
+    description: 'Present and on time',
+  },
+  {
+    id: 'Tardy',
+    label: 'Tardy',
+    badge: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+    buttonActive: 'bg-amber-600 text-white shadow-md shadow-amber-600/30 border-amber-500',
+    dotColor: 'bg-amber-400',
+    description: 'Arrived late without prior intimation',
+  },
+  {
+    id: 'Excused Tardy',
+    label: 'Excused Tardy',
+    badge: 'bg-sky-500/20 text-sky-300 border-sky-500/40',
+    buttonActive: 'bg-sky-600 text-white shadow-md shadow-sky-600/30 border-sky-500',
+    dotColor: 'bg-sky-400',
+    description: 'Late arrival with pre-approved notice',
+  },
+  {
+    id: 'Absent',
+    label: 'Absent',
+    badge: 'bg-red-500/20 text-red-400 border-red-500/40',
+    buttonActive: 'bg-red-600 text-white shadow-md shadow-red-600/30 border-red-500',
+    dotColor: 'bg-red-400',
+    description: 'Unexcused absence',
+  },
+  {
+    id: 'Excused Absence',
+    label: 'Excused Absence',
+    badge: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+    buttonActive: 'bg-purple-600 text-white shadow-md shadow-purple-600/30 border-purple-500',
+    dotColor: 'bg-purple-400',
+    description: 'Pre-approved university/medical leave',
   },
 ];

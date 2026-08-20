@@ -13,6 +13,7 @@ import {
   RefreshCw,
   Sparkles,
   Layers,
+  CalendarCheck,
 } from 'lucide-react';
 import { ViewMode } from '@/types/task';
 
@@ -111,26 +112,40 @@ export const Header: React.FC = () => {
           <div className="flex items-center bg-wazir-card/90 p-1 rounded-xl border border-wazir-border/70 shadow-inner">
             <button
               onClick={() => setViewMode('kanban')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 viewMode === 'kanban'
                   ? 'bg-gradient-to-r from-sky-500 to-indigo-600 text-white shadow-md shadow-sky-500/20'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
               }`}
             >
               <Kanban className="w-4 h-4" />
-              <span>Kanban Board</span>
+              <span className="hidden sm:inline">Kanban Board</span>
+              <span className="sm:hidden">Kanban</span>
             </button>
 
             <button
               onClick={() => setViewMode('matrix')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 viewMode === 'matrix'
                   ? 'bg-gradient-to-r from-sky-500 to-indigo-600 text-white shadow-md shadow-sky-500/20'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
               }`}
             >
               <Users className="w-4 h-4" />
-              <span>Member Matrix</span>
+              <span className="hidden sm:inline">Member Matrix</span>
+              <span className="sm:hidden">Matrix</span>
+            </button>
+
+            <button
+              onClick={() => setViewMode('attendance')}
+              className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                viewMode === 'attendance'
+                  ? 'bg-gradient-to-r from-sky-500 to-indigo-600 text-white shadow-md shadow-sky-500/20'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+              }`}
+            >
+              <CalendarCheck className="w-4 h-4" />
+              <span>Attendance</span>
             </button>
           </div>
 

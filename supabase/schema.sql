@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- WAZIR - The Strategy & Consulting Club
--- Real-Time Deadline Tracker Database Schema & Seed Data
+-- Real-Time Deadline & Attendance Tracker Database Schema & Seed Data
 -- ==============================================================================
 
 -- 1. Create tasks table
@@ -35,7 +35,7 @@ CREATE TRIGGER set_tasks_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION public.handle_updated_at();
 
--- 4. Enable Row Level Security (RLS)
+-- 4. Enable Row Level Security (RLS) on tasks
 ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
 
 -- 5. Create policy to allow all operations for club members using anon key
@@ -59,13 +59,60 @@ BEGIN
     END IF;
 END $$;
 
--- 7. Add performance indexes
+-- 7. Add performance indexes for tasks
 CREATE INDEX IF NOT EXISTS idx_tasks_status ON public.tasks(status);
 CREATE INDEX IF NOT EXISTS idx_tasks_vertical ON public.tasks(vertical);
 CREATE INDEX IF NOT EXISTS idx_tasks_deadline ON public.tasks(deadline);
 CREATE INDEX IF NOT EXISTS idx_tasks_created_at ON public.tasks(created_at DESC);
 
--- 8. Seed Initial Data for Wazir Club (All start unassigned until explicitly assigned)
+-- 8. Create attendance table for tracking daily meeting presence
+CREATE TABLE IF NOT EXISTS public.attendance (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    member_name TEXT NOT NULL CHECK (member_name IN ('Avi', 'Ishika', 'Nandini', 'Simar', 'Harshvardhan', 'Animesh', 'Vishakha', 'Devanshi', 'Somansha', 'Akruti')),
+    date DATE NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('Present', 'Tardy', 'Excused Tardy', 'Absent', 'Excused Absence')),
+    notes TEXT DEFAULT '',
+    created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+    CONSTRAINT unique_member_attendance_date UNIQUE (member_name, date)
+);
+
+-- Attach updated_at trigger to attendance table
+DROP TRIGGER IF EXISTS set_attendance_updated_at ON public.attendance;
+CREATE TRIGGER set_attendance_updated_at
+    BEFORE UPDATE ON public.attendance
+    FOR EACH ROW
+    EXECUTE FUNCTION public.handle_updated_at();
+
+-- Enable RLS on attendance
+ALTER TABLE public.attendance ENABLE ROW LEVEL SECURITY;
+
+-- Allow public access for club operations on attendance
+DROP POLICY IF EXISTS "Public access to attendance for Wazir members" ON public.attendance;
+CREATE POLICY "Public access to attendance for Wazir members"
+    ON public.attendance
+    FOR ALL
+    TO public
+    USING (true)
+    WITH CHECK (true);
+
+-- Enable Realtime publication for attendance table
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_publication_tables 
+        WHERE pubname = 'supabase_realtime' 
+        AND tablename = 'attendance'
+    ) THEN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.attendance;
+    END IF;
+END $$;
+
+-- Attendance indexes
+CREATE INDEX IF NOT EXISTS idx_attendance_date ON public.attendance(date);
+CREATE INDEX IF NOT EXISTS idx_attendance_member ON public.attendance(member_name);
+
+-- 9. Seed Initial Data for Wazir Club (All start unassigned until explicitly assigned)
 INSERT INTO public.tasks (title, description, vertical, assignees, status, priority, deadline, subtasks, resources)
 VALUES
 (

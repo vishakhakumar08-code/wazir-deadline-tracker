@@ -239,9 +239,7 @@ export const TaskModal: React.FC = () => {
             </div>
           </div>
 
-          {/* Assignees Selection (Multi-select chips for all 10 members - Starts unassigned) */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
                 <Users className="w-3.5 h-3.5 text-amber-400" />
                 Assign Junior Team Members
@@ -251,23 +249,48 @@ export const TaskModal: React.FC = () => {
                   </span>
                 ) : (
                   <span className="text-[11px] font-bold text-amber-300">
-                    ({selectedAssignees.length} selected)
+                    ({selectedAssignees.length}/{ASSIGNEES.length} selected)
                   </span>
                 )}
               </label>
-              {selectedAssignees.length > 0 && (
+
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={clearAllAssignees}
-                  className="text-[11px] text-slate-400 hover:text-red-400 transition-colors"
+                  onClick={() => {
+                    if (selectedAssignees.length === ASSIGNEES.length) {
+                      setSelectedAssignees([]);
+                    } else {
+                      setSelectedAssignees(ASSIGNEES.map((a) => a.name));
+                    }
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 border transition-all cursor-pointer ${
+                    selectedAssignees.length === ASSIGNEES.length
+                      ? 'bg-amber-500 text-wazir-midnight border-amber-400 shadow-md shadow-amber-500/30'
+                      : 'bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border-sky-500/40'
+                  }`}
                 >
-                  Clear (Make Unassigned)
+                  <Users className="w-3 h-3" />
+                  <span>
+                    {selectedAssignees.length === ASSIGNEES.length
+                      ? '✓ Entire Team Selected (Deselect)'
+                      : '⚡ Select All / Entire Team'}
+                  </span>
                 </button>
-              )}
+                {selectedAssignees.length > 0 && selectedAssignees.length < ASSIGNEES.length && (
+                  <button
+                    type="button"
+                    onClick={clearAllAssignees}
+                    className="text-[11px] text-slate-400 hover:text-red-400 transition-colors"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
             </div>
 
             <p className="text-[11px] text-slate-400 mb-2">
-              Select one or more team members to assign this deliverable. If none are selected, it will be marked as <strong>Unassigned</strong>.
+              Select team members or click <strong>Entire Team</strong> to assign to all 10 members.
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">

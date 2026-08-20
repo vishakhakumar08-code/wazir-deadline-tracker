@@ -232,6 +232,96 @@ export async function deleteTaskInSupabase(id: string): Promise<SupabaseResponse
   }
 }
 
+// Attendance Supabase Helpers
+export async function fetchAttendanceFromSupabase(dateStr: string): Promise<SupabaseResponse<any[]>> {
+  const client = getSupabaseClient();
+  if (!client) {
+    return { data: null, error: new Error('Supabase client is not configured') };
+  }
+
+  try {
+    const { data, error } = await client
+      .from('attendance')
+      .select('*')
+      .eq('date', dateStr);
+
+    if (error) {
+      console.error('[Supabase fetch attendance error]:', error);
+      return { data: null, error };
+    }
+
+    return { data: data || [], error: null };
+  } catch (err: any) {
+    console.error('[Supabase fetch attendance exception]:', err);
+    return { data: null, error: err };
+  }
+}
+
+export async function upsertAttendanceToSupabase(record: {
+  member_name: string;
+  date: string;
+  status: string;
+  notes?: string;
+}): Promise<SupabaseResponse<any>> {
+  const client = getSupabaseClient();
+  if (!client) {
+    return { data: null, error: new Error('Supabase client is not configured') };
+  }
+
+  try {
+    const payload = {
+      member_name: record.member_name,
+      date: record.date,
+      status: record.status,
+      notes: record.notes || '',
+    };
+
+    const { data, error } = await client
+      .from('attendance')
+      .upsert(payload, { onConflict: 'member_name,date' })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[Supabase upsert attendance error]:', error);
+      return { data: null, error };
+    }
+
+    return { data, error: null };
+  } catch (err: any) {
+    console.error('[Supabase upsert attendance exception]:', err);
+    return { data: null, error: err };
+  }
+}
+
+export async function bulkUpsertAttendanceToSupabase(records: {
+  member_name: string;
+  date: string;
+  status: string;
+  notes?: string;
+}[]): Promise<SupabaseResponse<boolean>> {
+  const client = getSupabaseClient();
+  if (!client) {
+    return { data: null, error: new Error('Supabase client is not configured') };
+  }
+
+  try {
+    const { error } = await client
+      .from('attendance')
+      .upsert(records, { onConflict: 'member_name,date' });
+
+    if (error) {
+      console.error('[Supabase bulk upsert attendance error]:', error);
+      return { data: false, error };
+    }
+
+    return { data: true, error: null };
+  } catch (err: any) {
+    console.error('[Supabase bulk upsert attendance exception]:', err);
+    return { data: false, error: err };
+  }
+}
+
 /**
  * Setup Realtime channel subscription for live sync across all users and tabs
  */

@@ -13,6 +13,8 @@ import { SqlSetupModal } from '@/components/SqlSetupModal';
 import { ExportModal } from '@/components/ExportModal';
 import { CheckCircle2, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 
+import { AttendanceTracker } from '@/components/AttendanceTracker';
+
 export default function Home() {
   const { viewMode, toast } = useTaskContext();
 
@@ -35,14 +37,20 @@ export default function Home() {
 
       {/* Main Container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        {/* Executive Stats KPI Bar */}
-        <StatsOverview />
+        {viewMode !== 'attendance' && (
+          <>
+            {/* Executive Stats KPI Bar */}
+            <StatsOverview />
 
-        {/* Global Filter Bar */}
-        <FilterBar />
+            {/* Global Filter Bar */}
+            <FilterBar />
+          </>
+        )}
 
         {/* Dynamic View Mode */}
-        {viewMode === 'kanban' ? <KanbanBoard /> : <MemberMatrix />}
+        {viewMode === 'kanban' && <KanbanBoard />}
+        {viewMode === 'matrix' && <MemberMatrix />}
+        {viewMode === 'attendance' && <AttendanceTracker />}
       </div>
 
       {/* Interactive Modals */}

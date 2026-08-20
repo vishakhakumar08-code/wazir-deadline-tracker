@@ -296,24 +296,52 @@ export const TaskDetailModal: React.FC = () => {
                 </div>
               )
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                {ASSIGNEES.map((assignee) => {
-                  const isSelected = editAssignees.includes(assignee.name);
-                  return (
-                    <button
-                      key={assignee.name}
-                      type="button"
-                      onClick={() => toggleAssignee(assignee.name)}
-                      className={`p-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 border ${
-                        isSelected
-                          ? 'bg-amber-500/20 border-amber-500 text-amber-300'
-                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      <span>{assignee.name}</span>
-                    </button>
-                  );
-                })}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between pb-1">
+                  <span className="text-[11px] text-slate-400">
+                    {editAssignees.length === 0
+                      ? 'Currently unassigned'
+                      : `${editAssignees.length}/${ASSIGNEES.length} members selected`}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (editAssignees.length === ASSIGNEES.length) {
+                        setEditAssignees([]);
+                      } else {
+                        setEditAssignees(ASSIGNEES.map((a) => a.name));
+                      }
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
+                      editAssignees.length === ASSIGNEES.length
+                        ? 'bg-amber-500 text-wazir-midnight border-amber-400 font-bold'
+                        : 'bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border-sky-500/40'
+                    }`}
+                  >
+                    {editAssignees.length === ASSIGNEES.length
+                      ? '✓ Entire Team (Deselect)'
+                      : '⚡ Select All / Entire Team'}
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                  {ASSIGNEES.map((assignee) => {
+                    const isSelected = editAssignees.includes(assignee.name);
+                    return (
+                      <button
+                        key={assignee.name}
+                        type="button"
+                        onClick={() => toggleAssignee(assignee.name)}
+                        className={`p-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 border ${
+                          isSelected
+                            ? 'bg-amber-500/20 border-amber-500 text-amber-300 ring-1 ring-amber-400/30'
+                            : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <span>{assignee.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
