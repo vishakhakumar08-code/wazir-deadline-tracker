@@ -44,6 +44,8 @@ interface TaskContextType {
   setIsSqlModalOpen: (open: boolean) => void;
   isExportModalOpen: boolean;
   setIsExportModalOpen: (open: boolean) => void;
+  isArchiveModalOpen: boolean;
+  setIsArchiveModalOpen: (open: boolean) => void;
   selectedTask: Task | null;
   setSelectedTask: (task: Task | null) => void;
   prefilledAssignee: Assignee | null;
@@ -59,6 +61,7 @@ interface TaskContextType {
     completed: number;
     inProgress: number;
     inReview: number;
+    toDo: number;
     backlog: number;
     completionRate: number;
   };
@@ -91,6 +94,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSqlModalOpen, setIsSqlModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [prefilledAssignee, setPrefilledAssignee] = useState<Assignee | null>(null);
 
@@ -124,7 +128,11 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
             try {
               const parsed = JSON.parse(cached);
               if (Array.isArray(parsed)) {
-                setTasks(parsed);
+                const normalized = parsed.map((t: any) => ({
+                  ...t,
+                  status: t.status === 'Backlog' ? 'To Do' : t.status,
+                }));
+                setTasks(normalized);
               }
             } catch (e) {}
           }
@@ -133,8 +141,11 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data !== null) {
-        // Source of truth is the live database table (even if empty, do not re-seed mock data)
-        setTasks(data);
+        const normalized = data.map((t: any) => ({
+          ...t,
+          status: t.status === 'Backlog' ? 'To Do' : t.status,
+        }));
+        setTasks(normalized);
         setLastSyncTime(new Date());
         setRealtimeStatus('SUBSCRIBED');
         return;
@@ -148,7 +159,11 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           const parsed = JSON.parse(cached);
           if (Array.isArray(parsed)) {
-            setTasks(parsed);
+            const normalized = parsed.map((t: any) => ({
+              ...t,
+              status: t.status === 'Backlog' ? 'To Do' : t.status,
+            }));
+            setTasks(normalized);
             setRealtimeStatus('LOCAL_DEMO');
             setLastSyncTime(new Date());
             return;
@@ -240,6 +255,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const validUUID = generateUUID();
     const newTask: Task = {
       ...taskData,
+      status: taskData.status === ('Backlog' as any) ? 'To Do' : taskData.status,
       id: validUUID,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -381,13 +397,13 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let completed = 0;
     let inProgress = 0;
     let inReview = 0;
-    let backlog = 0;
+    let toDo = 0;
 
     tasks.forEach((task) => {
       if (task.status === 'Completed') completed++;
       if (task.status === 'In Progress') inProgress++;
       if (task.status === 'Review') inReview++;
-      if (task.status === 'Backlog') backlog++;
+      if (task.status === 'To Do' || (task.status as any) === 'Backlog') toDo++;
 
       if (task.priority === 'Urgent' && task.status !== 'Completed') urgent++;
 
@@ -407,7 +423,8 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       completed,
       inProgress,
       inReview,
-      backlog,
+      toDo,
+      backlog: toDo, // Alias for backwards compatibility
       completionRate,
     };
   }, [tasks]);
@@ -476,6 +493,8 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsSqlModalOpen,
         isExportModalOpen,
         setIsExportModalOpen,
+        isArchiveModalOpen,
+        setIsArchiveModalOpen,
         selectedTask,
         setSelectedTask,
         prefilledAssignee,

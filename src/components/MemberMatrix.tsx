@@ -276,7 +276,7 @@ export const MemberMatrix: React.FC = () => {
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   const nextStatus: Record<TaskStatus, TaskStatus> = {
-                                    Backlog: 'In Progress',
+                                    'To Do': 'In Progress',
                                     'In Progress': 'Review',
                                     Review: 'Completed',
                                     Completed: 'Completed',

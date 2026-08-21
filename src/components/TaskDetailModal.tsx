@@ -22,6 +22,8 @@ import {
   ExternalLink,
   Save,
   UserX,
+  Minus,
+  Users,
 } from 'lucide-react';
 
 export const TaskDetailModal: React.FC = () => {
@@ -32,6 +34,7 @@ export const TaskDetailModal: React.FC = () => {
     deleteTask,
     toggleSubtask,
     moveTaskStatus,
+    showToast,
   } = useTaskContext();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -45,13 +48,13 @@ export const TaskDetailModal: React.FC = () => {
 
   if (!selectedTask) return null;
 
-  const verticalConfig = VERTICALS.find((v) => v.id === selectedTask.vertical) || VERTICALS[0];
-  const priorityConfig = PRIORITIES.find((p) => p.id === selectedTask.priority) || PRIORITIES[2];
+  const verticalConfig = VERTICALS.find((v) => v.id === (isEditing ? editVertical : selectedTask.vertical)) || VERTICALS[0];
+  const priorityConfig = PRIORITIES.find((p) => p.id === (isEditing ? editPriority : selectedTask.priority)) || PRIORITIES[2];
   const deadlineInfo = getDeadlineInfo(selectedTask.deadline, selectedTask.status);
 
   const startEditing = () => {
     setEditTitle(selectedTask.title);
-    setEditDescription(selectedTask.description);
+    setEditDescription(selectedTask.description || '');
     setEditVertical(selectedTask.vertical);
     setEditPriority(selectedTask.priority);
     setEditDeadline(toDatetimeLocalString(new Date(selectedTask.deadline)));
@@ -59,17 +62,32 @@ export const TaskDetailModal: React.FC = () => {
     setIsEditing(true);
   };
 
-  const handleSaveEdit = async () => {
-    if (!editTitle.trim()) return;
-    await updateTask(selectedTask.id, {
-      title: editTitle.trim(),
-      description: editDescription.trim(),
-      vertical: editVertical,
-      priority: editPriority,
-      deadline: new Date(editDeadline).toISOString(),
-      assignees: editAssignees,
-    });
+  const cancelEditing = () => {
     setIsEditing(false);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editTitle.trim()) {
+      showToast('Please provide a deliverable title', 'warning');
+      return;
+    }
+
+    try {
+      const parsedDeadline = editDeadline ? new Date(editDeadline).toISOString() : selectedTask.deadline;
+      await updateTask(selectedTask.id, {
+        title: editTitle.trim(),
+        description: editDescription.trim(),
+        vertical: editVertical,
+        priority: editPriority,
+        deadline: parsedDeadline,
+        assignees: editAssignees,
+      });
+      setIsEditing(false);
+      showToast('Deliverable updated successfully!', 'success');
+    } catch (err: any) {
+      console.error('Error saving edits:', err);
+      showToast(`Failed to update: ${err?.message || 'Error saving'}`, 'error');
+    }
   };
 
   const handleAddSubtask = async (e: React.FormEvent) => {
@@ -121,48 +139,63 @@ export const TaskDetailModal: React.FC = () => {
         <div className="px-5 sm:px-6 py-3.5 sm:py-4 border-b border-wazir-border/60 bg-slate-900/60 flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2">
             <span className={`text-xs font-bold px-2.5 py-1 rounded-md border ${verticalConfig.badge}`}>
-              {selectedTask.vertical}
+              {isEditing ? editVertical : selectedTask.vertical}
             </span>
             <span className={`text-xs font-bold px-2.5 py-1 rounded-md border ${priorityConfig.badge}`}>
-              {selectedTask.priority}
+              {isEditing ? editPriority : selectedTask.priority}
             </span>
+            {isEditing && (
+              <span className="text-[11px] font-bold text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30 animate-pulse">
+                Editing Mode
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
             {!isEditing ? (
               <button
                 onClick={startEditing}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors text-xs flex items-center gap-1"
-                title="Edit details"
+                className="px-2.5 py-1.5 rounded-xl text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-800 border border-slate-700 transition-colors text-xs font-bold flex items-center gap-1.5 cursor-pointer min-h-[36px]"
+                title="Edit deliverable"
               >
-                <Edit3 className="w-4 h-4" />
+                <Edit3 className="w-3.5 h-3.5 text-amber-400" />
                 <span>Edit</span>
               </button>
             ) : (
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={cancelEditing}
+                  className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 cursor-pointer min-h-[36px]"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveEdit}
+                  className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-600/30 cursor-pointer min-h-[36px]"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  <span>Save</span>
+                </button>
+              </div>
+            )}
+
+            {!isEditing && (
               <button
-                onClick={handleSaveEdit}
-                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center gap-1"
+                onClick={() => {
+                  if (confirm('Are you sure you want to delete this deliverable?')) {
+                    deleteTask(selectedTask.id);
+                  }
+                }}
+                className="p-2 rounded-xl text-slate-400 hover:text-red-400 hover:bg-slate-800 transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
+                title="Delete deliverable"
               >
-                <Save className="w-3.5 h-3.5" />
-                <span>Save</span>
+                <Trash2 className="w-4 h-4" />
               </button>
             )}
 
             <button
-              onClick={() => {
-                if (confirm('Are you sure you want to delete this deliverable?')) {
-                  deleteTask(selectedTask.id);
-                }
-              }}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-800 transition-colors"
-              title="Delete deliverable"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-
-            <button
               onClick={() => setSelectedTask(null)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
             >
               <X className="w-5 h-5" />
             </button>
@@ -170,11 +203,14 @@ export const TaskDetailModal: React.FC = () => {
         </div>
 
         {/* Modal Content */}
-        <div className="p-6 space-y-6 max-h-[calc(100vh-220px)] overflow-y-auto scrollbar-thin">
-          {/* Main Title & Deadline Callout */}
+        <div className="p-5 sm:p-6 space-y-5 overflow-y-auto scrollbar-thin">
+          {/* Main Title */}
           <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+              Deliverable Title {isEditing && '*'}
+            </label>
             {!isEditing ? (
-              <h2 className="text-xl font-bold text-white font-heading leading-snug">
+              <h2 className="text-lg sm:text-xl font-bold text-white font-heading leading-snug">
                 {selectedTask.title}
               </h2>
             ) : (
@@ -182,65 +218,180 @@ export const TaskDetailModal: React.FC = () => {
                 type="text"
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                className="w-full bg-slate-900 border border-wazir-border rounded-xl px-3 py-2 text-lg font-bold text-white focus:outline-none focus:border-amber-500"
+                placeholder="Deliverable title"
+                className="w-full bg-slate-900 border border-wazir-border rounded-xl px-3.5 py-2.5 text-base font-bold text-white focus:outline-none focus:border-amber-500 font-heading min-h-[44px]"
               />
             )}
+          </div>
 
-            {/* Deadline Countdown Banner */}
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-slate-900/80 border border-slate-800">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-amber-400" />
-                <div>
-                  <p className="text-[11px] text-slate-400">Target Deadline</p>
-                  <p className="text-xs font-semibold text-white">
-                    {deadlineInfo.formattedDate}
-                  </p>
+          {/* Edit Mode: Vertical & Priority Selector Row */}
+          {isEditing && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+              {/* Vertical Selector */}
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-sky-400" />
+                  Club Vertical *
+                </label>
+                <select
+                  value={editVertical}
+                  onChange={(e) => setEditVertical(e.target.value as Vertical)}
+                  className="w-full bg-slate-900 border border-wazir-border rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 font-medium cursor-pointer min-h-[44px]"
+                >
+                  {VERTICALS.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Priority Selector */}
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                  Priority Level *
+                </label>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {PRIORITIES.map((p) => {
+                    const isSelected = editPriority === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setEditPriority(p.id)}
+                        className={`py-2 px-1 rounded-xl text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 min-h-[44px] cursor-pointer ${
+                          isSelected
+                            ? `${p.badge} ring-2 ring-amber-400/50 shadow-md`
+                            : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                        }`}
+                      >
+                        {p.id === 'Urgent' && <Flame className="w-3.5 h-3.5 text-red-400" />}
+                        {p.id === 'High' && <AlertTriangle className="w-3.5 h-3.5 text-orange-400" />}
+                        {p.id === 'Medium' && <Clock className="w-3.5 h-3.5 text-amber-400" />}
+                        {p.id === 'Low' && <Minus className="w-3.5 h-3.5 text-slate-400" />}
+                        <span>{p.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
+            </div>
+          )}
 
-              <div
-                className={`flex items-center gap-1.5 text-xs px-3 py-1 rounded-lg border font-semibold ${deadlineInfo.badgeClass}`}
-              >
-                <span className={`w-2 h-2 rounded-full ${deadlineInfo.dotClass}`} />
-                <span>{deadlineInfo.timeRemainingText}</span>
+          {/* Deadline Section: View Mode vs Edit Mode Date Picker */}
+          <div>
+            {!isEditing ? (
+              /* Deadline Countdown Banner */
+              <div className="flex flex-wrap items-center justify-between gap-2 p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800">
+                <div className="flex items-center gap-2.5">
+                  <Calendar className="w-4 h-4 text-amber-400 shrink-0" />
+                  <div>
+                    <p className="text-[11px] text-slate-400">Target Deadline</p>
+                    <p className="text-xs sm:text-sm font-semibold text-white">
+                      {deadlineInfo.formattedDate}
+                    </p>
+                  </div>
+                </div>
+
+                <div
+                  className={`flex items-center gap-1.5 text-xs px-3 py-1 rounded-xl border font-semibold ${deadlineInfo.badgeClass}`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${deadlineInfo.dotClass}`} />
+                  <span>{deadlineInfo.timeRemainingText}</span>
+                </div>
+              </div>
+            ) : (
+              /* Editable Deadline Date & Time Picker */
+              <div className="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                    Modify Deadline Date &amp; Time *
+                  </label>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] text-slate-400">Quick:</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const d = new Date(Date.now() + 6 * 60 * 60 * 1000);
+                        setEditDeadline(toDatetimeLocalString(d));
+                      }}
+                      className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 cursor-pointer min-h-[30px]"
+                    >
+                      +6h
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const d = new Date(Date.now() + 24 * 60 * 60 * 1000);
+                        setEditDeadline(toDatetimeLocalString(d));
+                      }}
+                      className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 cursor-pointer min-h-[30px]"
+                    >
+                      +24h
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const d = new Date(Date.now() + 72 * 60 * 60 * 1000);
+                        setEditDeadline(toDatetimeLocalString(d));
+                      }}
+                      className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 cursor-pointer min-h-[30px]"
+                    >
+                      +3d
+                    </button>
+                  </div>
+                </div>
+                <div className="relative">
+                  <Calendar className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-400 pointer-events-none" />
+                  <input
+                    type="datetime-local"
+                    required
+                    value={editDeadline}
+                    onChange={(e) => setEditDeadline(e.target.value)}
+                    className="w-full bg-slate-900 border border-wazir-border rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 font-medium min-h-[44px]"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Workflow Status Advance Bar (Only in View Mode) */}
+          {!isEditing && (
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                Deliverable Workflow Stage
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {STATUSES.map((st) => {
+                  const isActive = selectedTask.status === st.id;
+                  return (
+                    <button
+                      key={st.id}
+                      onClick={() => moveTaskStatus(selectedTask.id, st.id)}
+                      className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 border min-h-[44px] cursor-pointer ${
+                        isActive
+                          ? 'bg-sky-500 text-white border-sky-400 shadow-md shadow-sky-500/20'
+                          : 'bg-slate-900 text-slate-400 hover:text-white border-slate-800 hover:bg-slate-800'
+                      }`}
+                    >
+                      <span
+                        className={`w-2 h-2 rounded-full ${
+                          isActive ? 'bg-white' : st.dotColor
+                        }`}
+                      />
+                      <span>{st.label}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          </div>
-
-          {/* Workflow Status Advance Bar */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-              Deliverable Workflow Stage
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {STATUSES.map((st) => {
-                const isActive = selectedTask.status === st.id;
-                return (
-                  <button
-                    key={st.id}
-                    onClick={() => moveTaskStatus(selectedTask.id, st.id)}
-                    className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 border ${
-                      isActive
-                        ? 'bg-sky-500 text-white border-sky-400 shadow-md shadow-sky-500/20'
-                        : 'bg-slate-900 text-slate-400 hover:text-white border-slate-800 hover:bg-slate-800'
-                    }`}
-                  >
-                    <span
-                      className={`w-2 h-2 rounded-full ${
-                        isActive ? 'bg-white' : st.dotColor
-                      }`}
-                    />
-                    <span>{st.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          )}
 
           {/* Description */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-              Description / Notes
+              Description / Context
             </label>
             {!isEditing ? (
               <p className="text-sm text-slate-300 bg-slate-900/40 p-3.5 rounded-xl border border-slate-800/80 leading-relaxed">
@@ -251,7 +402,8 @@ export const TaskDetailModal: React.FC = () => {
                 rows={3}
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
-                className="w-full bg-slate-900 border border-wazir-border rounded-xl p-3 text-sm text-white focus:outline-none focus:border-amber-500"
+                placeholder="Add context, objectives, or instructions..."
+                className="w-full bg-slate-900 border border-wazir-border rounded-xl p-3 text-sm text-white focus:outline-none focus:border-amber-500 resize-none font-normal"
               ></textarea>
             )}
           </div>
@@ -259,7 +411,7 @@ export const TaskDetailModal: React.FC = () => {
           {/* Assignees Section */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-              Assigned Team Members ({selectedTask.assignees.length})
+              Assigned Junior Team Members ({(isEditing ? editAssignees : selectedTask.assignees).length})
             </label>
             {!isEditing ? (
               selectedTask.assignees && selectedTask.assignees.length > 0 ? (
@@ -301,32 +453,43 @@ export const TaskDetailModal: React.FC = () => {
                 </div>
               )
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <div className="flex items-center justify-between pb-1">
                   <span className="text-[11px] text-slate-400">
                     {editAssignees.length === 0
                       ? 'Currently unassigned'
                       : `${editAssignees.length}/${ASSIGNEES.length} members selected`}
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (editAssignees.length === ASSIGNEES.length) {
-                        setEditAssignees([]);
-                      } else {
-                        setEditAssignees(ASSIGNEES.map((a) => a.name));
-                      }
-                    }}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
-                      editAssignees.length === ASSIGNEES.length
-                        ? 'bg-amber-500 text-wazir-midnight border-amber-400 font-bold'
-                        : 'bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border-sky-500/40'
-                    }`}
-                  >
-                    {editAssignees.length === ASSIGNEES.length
-                      ? '✓ Entire Team (Deselect)'
-                      : '⚡ Select All / Entire Team'}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (editAssignees.length === ASSIGNEES.length) {
+                          setEditAssignees([]);
+                        } else {
+                          setEditAssignees(ASSIGNEES.map((a) => a.name));
+                        }
+                      }}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer min-h-[34px] ${
+                        editAssignees.length === ASSIGNEES.length
+                          ? 'bg-amber-500 text-wazir-midnight border-amber-400 font-bold'
+                          : 'bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border-sky-500/40'
+                      }`}
+                    >
+                      {editAssignees.length === ASSIGNEES.length
+                        ? '✓ Entire Team (Deselect)'
+                        : '⚡ Select All / Entire Team'}
+                    </button>
+                    {editAssignees.length > 0 && editAssignees.length < ASSIGNEES.length && (
+                      <button
+                        type="button"
+                        onClick={() => setEditAssignees([])}
+                        className="text-xs text-slate-400 hover:text-red-400 transition-colors"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                   {ASSIGNEES.map((assignee) => {
@@ -336,13 +499,20 @@ export const TaskDetailModal: React.FC = () => {
                         key={assignee.name}
                         type="button"
                         onClick={() => toggleAssignee(assignee.name)}
-                        className={`p-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 border ${
+                        className={`p-2.5 sm:p-2 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all min-h-[44px] cursor-pointer ${
                           isSelected
-                            ? 'bg-amber-500/20 border-amber-500 text-amber-300 ring-1 ring-amber-400/30'
-                            : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                            ? 'bg-amber-500/20 border-amber-500 text-amber-300 ring-1 ring-amber-400/30 shadow-sm'
+                            : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
                         }`}
                       >
-                        <span>{assignee.name}</span>
+                        <div
+                          className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                            isSelected ? 'bg-amber-400 text-wazir-midnight' : assignee.avatarBg
+                          }`}
+                        >
+                          {isSelected ? '✓' : assignee.initials}
+                        </div>
+                        <span className="truncate">{assignee.name}</span>
                       </button>
                     );
                   })}
@@ -368,19 +538,21 @@ export const TaskDetailModal: React.FC = () => {
                 <div
                   key={st.id}
                   onClick={() => toggleSubtask(selectedTask.id, st.id)}
-                  className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-900 border border-slate-800 cursor-pointer group transition-all"
+                  className={`group flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer min-h-[44px] ${
+                    st.completed
+                      ? 'bg-slate-900/40 border-slate-800/60 text-slate-400 line-through'
+                      : 'bg-slate-900/80 border-slate-800 text-slate-200 hover:border-slate-700'
+                  }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    {st.completed ? (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    ) : (
-                      <Square className="w-4 h-4 text-slate-500 group-hover:text-slate-300" />
-                    )}
-                    <span
-                      className={`text-xs font-medium ${
-                        st.completed ? 'line-through text-slate-500' : 'text-slate-200'
-                      }`}
-                    >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className={st.completed ? 'text-emerald-400' : 'text-slate-500'}>
+                      {st.completed ? (
+                        <CheckCircle2 className="w-4 h-4" />
+                      ) : (
+                        <Square className="w-4 h-4" />
+                      )}
+                    </div>
+                    <span className="text-xs sm:text-sm truncate">
                       {st.title}
                     </span>
                   </div>
@@ -390,7 +562,7 @@ export const TaskDetailModal: React.FC = () => {
                       e.stopPropagation();
                       handleDeleteSubtask(st.id);
                     }}
-                    className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-red-400 transition-opacity"
+                    className="p-1.5 text-slate-500 hover:text-red-400 transition-colors"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -405,11 +577,11 @@ export const TaskDetailModal: React.FC = () => {
                 value={newSubtaskInput}
                 onChange={(e) => setNewSubtaskInput(e.target.value)}
                 placeholder="Add next action item or checkpoint..."
-                className="flex-1 bg-slate-900 border border-wazir-border rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                className="flex-1 bg-slate-900 border border-wazir-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 min-h-[44px]"
               />
               <button
                 type="submit"
-                className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 flex items-center gap-1"
+                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1 cursor-pointer min-h-[44px]"
               >
                 <Plus className="w-3.5 h-3.5" />
                 Add
@@ -430,13 +602,34 @@ export const TaskDetailModal: React.FC = () => {
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-sky-400 hover:text-sky-300 transition-colors"
+                    className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-sky-400 hover:text-sky-300 transition-colors min-h-[44px]"
                   >
-                    <ExternalLink className="w-3.5 h-3.5" />
+                    <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                     <span className="truncate">{url}</span>
                   </a>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Edit Mode Bottom Action Bar */}
+          {isEditing && (
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-wazir-border/60">
+              <button
+                type="button"
+                onClick={cancelEditing}
+                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer min-h-[44px]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveEdit}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-emerald-600/20 cursor-pointer min-h-[44px]"
+              >
+                <Save className="w-4 h-4" />
+                <span>Save All Changes</span>
+              </button>
             </div>
           )}
         </div>

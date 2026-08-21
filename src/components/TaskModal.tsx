@@ -35,7 +35,7 @@ export const TaskModal: React.FC = () => {
   const [description, setDescription] = useState('');
   const [vertical, setVertical] = useState<Vertical>('Editorial');
   const [selectedAssignees, setSelectedAssignees] = useState<Assignee[]>([]);
-  const [status, setStatus] = useState<TaskStatus>('Backlog');
+  const [status, setStatus] = useState<TaskStatus>('To Do');
   const [priority, setPriority] = useState<TaskPriority>('Medium');
   
   // Default deadline: 2 days from now at 18:00

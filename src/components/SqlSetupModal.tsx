@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS public.tasks (
     description TEXT DEFAULT '',
     vertical TEXT NOT NULL CHECK (vertical IN ('Editorial', 'Public Relations', 'Events', 'Casebook', 'Apex', 'External Relations')),
     assignees TEXT[] NOT NULL DEFAULT '{}',
-    status TEXT NOT NULL DEFAULT 'Backlog' CHECK (status IN ('Backlog', 'In Progress', 'Review', 'Completed')),
+    status TEXT NOT NULL DEFAULT 'To Do' CHECK (status IN ('To Do', 'In Progress', 'Review', 'Completed', 'Backlog')),
     priority TEXT NOT NULL DEFAULT 'Medium' CHECK (priority IN ('Urgent', 'High', 'Medium', 'Low')),
     deadline TIMESTAMPTZ NOT NULL,
     subtasks JSONB NOT NULL DEFAULT '[]'::jsonb,

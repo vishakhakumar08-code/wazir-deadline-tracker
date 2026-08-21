@@ -21,7 +21,12 @@ export const StatsOverview: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <p className="text-xs font-semibold uppercase tracking-wider text-red-400/90 flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-red-400 animate-ping"></span>
+              <span className="relative flex h-2 w-2">
+                {stats.overdue > 0 && (
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                )}
+                <span className={`relative inline-flex rounded-full h-2 w-2 ${stats.overdue > 0 ? 'bg-red-500' : 'bg-slate-500'}`}></span>
+              </span>
               Overdue
             </p>
             <h3 className="text-2xl sm:text-3xl font-black text-white font-heading">

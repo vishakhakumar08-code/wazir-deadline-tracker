@@ -11,11 +11,12 @@ import { TaskModal } from '@/components/TaskModal';
 import { TaskDetailModal } from '@/components/TaskDetailModal';
 import { SqlSetupModal } from '@/components/SqlSetupModal';
 import { ExportModal } from '@/components/ExportModal';
+import { CompletedArchiveModal } from '@/components/CompletedArchiveModal';
 import { AttendanceTracker } from '@/components/AttendanceTracker';
 import { CheckCircle2, AlertCircle, Info, AlertTriangle, Plus } from 'lucide-react';
 
 export default function Home() {
-  const { viewMode, toast, setIsCreateModalOpen } = useTaskContext();
+  const { viewMode, toast, setIsCreateModalOpen, isArchiveModalOpen, setIsArchiveModalOpen } = useTaskContext();
 
   const getToastIcon = (type?: string) => {
     switch (type) {
@@ -66,6 +67,10 @@ export default function Home() {
       <TaskDetailModal />
       <SqlSetupModal />
       <ExportModal />
+      <CompletedArchiveModal
+        isOpen={isArchiveModalOpen}
+        onClose={() => setIsArchiveModalOpen(false)}
+      />
 
       {/* Floating Real-time Toast Notifications */}
       {toast && (

@@ -61,7 +61,7 @@ export const INITIAL_TASKS: Task[] = [
     description: 'Design carousel post highlighting alumni placement at MBB and boutique consulting practices.',
     vertical: 'Public Relations',
     assignees: [], // Starts unassigned
-    status: 'Backlog',
+    status: 'To Do',
     priority: 'Medium',
     deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
     subtasks: [
@@ -115,7 +115,7 @@ export const INITIAL_TASKS: Task[] = [
     description: 'Collate and sanitize real-world restructuring and buyout case notes from senior club alumni.',
     vertical: 'Casebook',
     assignees: [], // Starts unassigned
-    status: 'Backlog',
+    status: 'To Do',
     priority: 'Low',
     deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     subtasks: [

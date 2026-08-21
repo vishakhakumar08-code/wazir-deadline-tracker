@@ -92,8 +92,8 @@ export const STATUSES: {
   borderAccent: string;
 }[] = [
   {
-    id: 'Backlog',
-    label: 'Backlog',
+    id: 'To Do',
+    label: 'To Do',
     color: 'text-slate-400',
     dotColor: 'bg-slate-400',
     headerBg: 'bg-slate-800/60',

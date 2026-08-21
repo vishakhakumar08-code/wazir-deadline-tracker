@@ -18,7 +18,7 @@ export type Assignee =
   | 'Somansha'
   | 'Akruti';
 
-export type TaskStatus = 'Backlog' | 'In Progress' | 'Review' | 'Completed';
+export type TaskStatus = 'To Do' | 'In Progress' | 'Review' | 'Completed';
 
 export type TaskPriority = 'Urgent' | 'High' | 'Medium' | 'Low';
 
