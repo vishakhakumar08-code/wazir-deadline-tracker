@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useMemo, useCall
 import { Task, TaskFilterState, ViewMode, TaskStatus, Assignee, Vertical, TaskPriority, MemberStats } from '@/types/task';
 import { INITIAL_TASKS } from '@/lib/initialData';
 import { ASSIGNEES } from '@/lib/constants';
-import { getDeadlineInfo } from '@/lib/deadlineUtils';
+import { getDeadlineInfo, sortTasksByDeadline } from '@/lib/deadlineUtils';
 import {
   generateUUID,
   getSupabaseCredentials,
@@ -340,7 +340,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Filtered Tasks computation
   const filteredTasks = useMemo(() => {
-    return tasks.filter((task) => {
+    const result = tasks.filter((task) => {
       // 1. Vertical filter
       if (filters.vertical !== 'ALL' && task.vertical !== filters.vertical) {
         return false;
@@ -387,6 +387,8 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       return true;
     });
+
+    return sortTasksByDeadline(result);
   }, [tasks, filters]);
 
   // Executive KPI Summary computation

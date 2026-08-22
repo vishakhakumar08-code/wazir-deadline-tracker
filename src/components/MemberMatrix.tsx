@@ -3,7 +3,7 @@
 import React from 'react';
 import { useTaskContext } from '@/context/TaskContext';
 import { ASSIGNEES, VERTICALS, STATUSES } from '@/lib/constants';
-import { getDeadlineInfo } from '@/lib/deadlineUtils';
+import { getDeadlineInfo, sortTasksByDeadline } from '@/lib/deadlineUtils';
 import {
   User,
   Plus,
@@ -28,8 +28,10 @@ export const MemberMatrix: React.FC = () => {
     moveTaskStatus,
   } = useTaskContext();
 
-  const unassignedTasks = tasks.filter(
-    (t) => (!t.assignees || t.assignees.length === 0) && t.status !== 'Completed'
+  const unassignedTasks = sortTasksByDeadline(
+    tasks.filter(
+      (t) => (!t.assignees || t.assignees.length === 0) && t.status !== 'Completed'
+    )
   );
 
   return (
@@ -154,7 +156,9 @@ export const MemberMatrix: React.FC = () => {
             workloadScore: 0,
           };
 
-          const memberTasks = tasks.filter((t) => t.assignees && t.assignees.includes(assignee.name));
+          const memberTasks = sortTasksByDeadline(
+            tasks.filter((t) => t.assignees && t.assignees.includes(assignee.name))
+          );
           const activeTasks = memberTasks.filter((t) => t.status !== 'Completed');
           const completedTasks = memberTasks.filter((t) => t.status === 'Completed');
 

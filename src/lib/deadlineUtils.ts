@@ -137,3 +137,17 @@ export function toDatetimeLocalString(date: Date): string {
   const minutes = pad(date.getMinutes());
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
+
+/**
+ * Sorts tasks in ascending order by deadline (earliest / closest upcoming first).
+ * Tasks without a deadline are placed cleanly at the bottom of the list.
+ */
+export function sortTasksByDeadline<T extends { deadline?: string }>(tasks: T[]): T[] {
+  return [...tasks].sort((a, b) => {
+    if (!a.deadline && !b.deadline) return 0;
+    if (!a.deadline) return 1;
+    if (!b.deadline) return -1;
+    return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+  });
+}
+
