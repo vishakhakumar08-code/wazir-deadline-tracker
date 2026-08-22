@@ -89,9 +89,9 @@ export const FilterBar: React.FC = () => {
             <button
               key={vertical.id}
               onClick={() => setFilter('vertical', isSelected ? 'ALL' : vertical.id)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-medium shrink-0 transition-all border shadow-sm cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-all border shadow-sm cursor-pointer ${
                 isSelected
-                  ? 'bg-blue-50 text-blue-700 border-blue-200 font-semibold'
+                  ? `${vertical.badge} ring-1 ring-current shadow-sm`
                   : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
               }`}
             >
