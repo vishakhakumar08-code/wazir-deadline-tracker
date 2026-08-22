@@ -363,18 +363,34 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateTask = async (id: string, updates: Partial<Task>) => {
-    const normalizedUpdates = {
+    const normalizedUpdates: Partial<Task> = {
       ...updates,
-      status: updates.status === ('Backlog' as any) ? 'To Do' : updates.status,
+      ...(updates.status ? { status: updates.status === ('Backlog' as any) ? 'To Do' : updates.status } : {}),
       updated_at: new Date().toISOString(),
     };
 
     setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, ...normalizedUpdates } : t))
+      prev.map((t) =>
+        t.id === id
+          ? ({
+              ...t,
+              ...normalizedUpdates,
+              status: normalizedUpdates.status ?? t.status,
+            } as Task)
+          : t
+      )
     );
 
     if (selectedTask && selectedTask.id === id) {
-      setSelectedTask((prev) => (prev ? { ...prev, ...normalizedUpdates } : null));
+      setSelectedTask((prev) =>
+        prev
+          ? ({
+              ...prev,
+              ...normalizedUpdates,
+              status: normalizedUpdates.status ?? prev.status,
+            } as Task)
+          : null
+      );
     }
 
     if (isSupabaseConfigured) {
