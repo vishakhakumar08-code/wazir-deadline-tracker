@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { useTaskContext } from '@/context/TaskContext';
 import { ViewMode } from '@/types/task';
 import {
-  LayoutKanban,
   Users,
   CalendarCheck,
   MoreHorizontal,
@@ -12,6 +11,23 @@ import {
   FileText,
   X,
 } from 'lucide-react';
+
+const KanbanIcon = ({ className = 'w-5 h-5' }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <rect width="18" height="18" x="3" y="3" rx="2" />
+    <path d="M8 7v7" />
+    <path d="M12 7v4" />
+    <path d="M16 7v9" />
+  </svg>
+);
 
 export const MobileBottomNav: React.FC = () => {
   const {
@@ -27,7 +43,7 @@ export const MobileBottomNav: React.FC = () => {
     {
       id: 'kanban',
       label: 'Board',
-      icon: <LayoutKanban className="w-5 h-5" />,
+      icon: <KanbanIcon className="w-5 h-5" />,
     },
     {
       id: 'matrix',

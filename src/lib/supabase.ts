@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient, RealtimeChannel } from '@supabase/supabase-js';
-import { Task } from '@/types/task';
+import { Task, AttendanceRecord } from '@/types/task';
 
 let cachedClient: SupabaseClient | null = null;
 let cachedUrl: string | null = null;
@@ -232,8 +232,14 @@ export async function deleteTaskInSupabase(id: string): Promise<SupabaseResponse
   }
 }
 
+// -------------------------------------------------------------
 // Attendance Supabase Helpers
-export async function fetchAttendanceFromSupabase(dateStr: string): Promise<SupabaseResponse<any[]>> {
+// -------------------------------------------------------------
+
+/**
+ * Fetch attendance records for a specific ISO date (YYYY-MM-DD)
+ */
+export async function fetchAttendanceForDate(dateStr: string): Promise<SupabaseResponse<AttendanceRecord[]>> {
   const client = getSupabaseClient();
   if (!client) {
     return { data: null, error: new Error('Supabase client is not configured') };
@@ -257,7 +263,13 @@ export async function fetchAttendanceFromSupabase(dateStr: string): Promise<Supa
   }
 }
 
-export async function upsertAttendanceToSupabase(record: {
+// Alias for backwards compatibility
+export const fetchAttendanceFromSupabase = fetchAttendanceForDate;
+
+/**
+ * Upsert single attendance record (on conflict: member_name, date)
+ */
+export async function upsertAttendanceRecord(record: {
   member_name: string;
   date: string;
   status: string;
@@ -294,6 +306,12 @@ export async function upsertAttendanceToSupabase(record: {
   }
 }
 
+// Alias for backwards compatibility
+export const upsertAttendanceToSupabase = upsertAttendanceRecord;
+
+/**
+ * Bulk upsert attendance records
+ */
 export async function bulkUpsertAttendanceToSupabase(records: {
   member_name: string;
   date: string;
@@ -320,6 +338,56 @@ export async function bulkUpsertAttendanceToSupabase(records: {
     console.error('[Supabase bulk upsert attendance exception]:', err);
     return { data: false, error: err };
   }
+}
+
+/**
+ * Setup Realtime channel subscription for attendance changes
+ */
+export function subscribeToAttendanceChanges(
+  dateOrCallback?: string | (() => void),
+  onInsertOrUpdate?: (record: AttendanceRecord) => void,
+  onDelete?: (record: AttendanceRecord) => void
+): RealtimeChannel | null {
+  const client = getSupabaseClient();
+  if (!client) return null;
+
+  const targetDate = typeof dateOrCallback === 'string' ? dateOrCallback : undefined;
+  const genericCallback = typeof dateOrCallback === 'function' ? dateOrCallback : undefined;
+
+  const channel = client
+    .channel(`wazir-attendance-${targetDate || 'all'}-${Date.now()}`)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'attendance',
+      },
+      (payload) => {
+        if (genericCallback) {
+          genericCallback();
+        }
+
+        if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+          if (payload.new && onInsertOrUpdate) {
+            const rec = payload.new as AttendanceRecord;
+            if (!targetDate || rec.date === targetDate) {
+              onInsertOrUpdate(rec);
+            }
+          }
+        } else if (payload.eventType === 'DELETE') {
+          if (payload.old && onDelete) {
+            const rec = payload.old as AttendanceRecord;
+            if (!targetDate || rec.date === targetDate) {
+              onDelete(rec);
+            }
+          }
+        }
+      }
+    )
+    .subscribe();
+
+  return channel;
 }
 
 /**
