@@ -21,6 +21,7 @@ import {
   UserX,
   Users,
 } from 'lucide-react';
+import { MemberAvatar } from './MemberAvatar';
 
 export const TaskModal: React.FC = () => {
   const {
@@ -342,14 +343,9 @@ export const TaskModal: React.FC = () => {
                         : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                     }`}
                   >
-                    <div
-                      className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 ${
-                        isSelected ? 'bg-blue-600 text-white' : assignee.avatarBg
-                      }`}
-                    >
-                      {isSelected ? '✓' : assignee.initials}
-                    </div>
+                    <MemberAvatar name={assignee.name} size="xs" />
                     <span className="truncate">{assignee.name}</span>
+                    {isSelected && <span className="text-[10px] text-blue-600 font-bold ml-auto">✓</span>}
                   </button>
                 );
               })}

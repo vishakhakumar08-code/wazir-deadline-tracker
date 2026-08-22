@@ -127,7 +127,47 @@ END $$;
 
 -- Attendance indexes
 CREATE INDEX IF NOT EXISTS idx_attendance_date ON public.attendance(date);
-CREATE INDEX IF NOT EXISTS idx_attendance_member ON public.attendance(member_name);`;
+CREATE INDEX IF NOT EXISTS idx_attendance_member ON public.attendance(member_name);
+
+-- 9. Create members table for custom avatar photos & profile settings
+CREATE TABLE IF NOT EXISTS public.members (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL UNIQUE CHECK (name IN ('Avi', 'Ishika', 'Nandini', 'Simar', 'Harshvardhan', 'Animesh', 'Vishakha', 'Devanshi', 'Somansha', 'Akruti')),
+    avatar_url TEXT DEFAULT '',
+    created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- Attach updated_at trigger to members table
+DROP TRIGGER IF EXISTS set_members_updated_at ON public.members;
+CREATE TRIGGER set_members_updated_at
+    BEFORE UPDATE ON public.members
+    FOR EACH ROW
+    EXECUTE FUNCTION public.handle_updated_at();
+
+-- Enable RLS on members
+ALTER TABLE public.members ENABLE ROW LEVEL SECURITY;
+
+-- Allow public access for club operations on members
+DROP POLICY IF EXISTS "Public access to members for Wazir club" ON public.members;
+CREATE POLICY "Public access to members for Wazir club"
+    ON public.members
+    FOR ALL
+    TO public
+    USING (true)
+    WITH CHECK (true);
+
+-- Enable Realtime publication for members table
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_publication_tables 
+        WHERE pubname = 'supabase_realtime' 
+        AND tablename = 'members'
+    ) THEN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.members;
+    END IF;
+END $$;`;
 
 export const SqlSetupModal: React.FC = () => {
   const {

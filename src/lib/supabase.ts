@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient, RealtimeChannel } from '@supabase/supabase-js';
-import { Task, AttendanceRecord } from '@/types/task';
+import { Task, AttendanceRecord, MemberProfile } from '@/types/task';
 
 let cachedClient: SupabaseClient | null = null;
 let cachedUrl: string | null = null;
@@ -479,3 +479,100 @@ export function subscribeToTaskChanges(
 
   return channel;
 }
+
+// -------------------------------------------------------------
+// Member Profile & Avatar Supabase Helpers
+// -------------------------------------------------------------
+
+/**
+ * Fetch all member profiles from Supabase
+ */
+export async function fetchMembersFromSupabase(): Promise<SupabaseResponse<MemberProfile[]>> {
+  const client = getSupabaseClient();
+  if (!client) {
+    return { data: null, error: new Error('Supabase client is not configured') };
+  }
+
+  try {
+    const { data, error } = await client
+      .from('members')
+      .select('*');
+
+    if (error) {
+      console.error('[Supabase fetch members error]:', error);
+      return { data: null, error };
+    }
+
+    return { data: data || [], error: null };
+  } catch (err: any) {
+    console.error('[Supabase fetch members exception]:', err);
+    return { data: null, error: err };
+  }
+}
+
+/**
+ * Upsert member avatar URL (on conflict: name)
+ */
+export async function upsertMemberAvatarInSupabase(
+  name: string,
+  avatarUrl: string
+): Promise<SupabaseResponse<any>> {
+  const client = getSupabaseClient();
+  if (!client) {
+    return { data: null, error: new Error('Supabase client is not configured') };
+  }
+
+  try {
+    const payload = {
+      name,
+      avatar_url: avatarUrl,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data, error } = await client
+      .from('members')
+      .upsert(payload, { onConflict: 'name' })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[Supabase upsert member avatar error]:', error);
+      return { data: null, error };
+    }
+
+    return { data, error: null };
+  } catch (err: any) {
+    console.error('[Supabase upsert member avatar exception]:', err);
+    return { data: null, error: err };
+  }
+}
+
+/**
+ * Setup Realtime subscription for member profile changes
+ */
+export function subscribeToMemberChanges(
+  onUpdate: (member: MemberProfile) => void
+): RealtimeChannel | null {
+  const client = getSupabaseClient();
+  if (!client) return null;
+
+  const channel = client
+    .channel(`wazir-members-realtime-${Date.now()}`)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'members',
+      },
+      (payload) => {
+        if (payload.new) {
+          onUpdate(payload.new as MemberProfile);
+        }
+      }
+    )
+    .subscribe();
+
+  return channel;
+}
+

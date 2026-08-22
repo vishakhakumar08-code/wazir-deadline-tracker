@@ -97,3 +97,12 @@ export interface DailyAttendanceSummary {
   unmarked: number;
   attendanceRate: number;
 }
+
+// Member Profile Types
+export interface MemberProfile {
+  id?: string;
+  name: Assignee;
+  avatar_url?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}

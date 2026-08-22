@@ -16,6 +16,7 @@ import { TaskDetailModal } from '@/components/TaskDetailModal';
 import { SqlSetupModal } from '@/components/SqlSetupModal';
 import { ExportModal } from '@/components/ExportModal';
 import { CompletedArchiveModal } from '@/components/CompletedArchiveModal';
+import { EditAvatarModal } from '@/components/EditAvatarModal';
 import { CheckCircle2, AlertCircle, Info, AlertTriangle, Plus } from 'lucide-react';
 
 export default function Home() {
@@ -94,6 +95,7 @@ export default function Home() {
         isOpen={isArchiveModalOpen}
         onClose={() => setIsArchiveModalOpen(false)}
       />
+      <EditAvatarModal />
 
       {/* Toast Notifications */}
       {toast && (

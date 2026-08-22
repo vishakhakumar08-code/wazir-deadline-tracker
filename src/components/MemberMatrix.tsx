@@ -14,8 +14,10 @@ import {
   Briefcase,
   Layers,
   UserX,
+  Camera,
 } from 'lucide-react';
 import { Task, TaskStatus } from '@/types/task';
+import { MemberAvatar } from './MemberAvatar';
 
 export const MemberMatrix: React.FC = () => {
   const {
@@ -24,6 +26,7 @@ export const MemberMatrix: React.FC = () => {
     openCreateModalWithAssignee,
     setSelectedTask,
     moveTaskStatus,
+    setEditingMemberForAvatar,
   } = useTaskContext();
 
   const unassignedTasks = sortTasksByDeadline(
@@ -192,14 +195,29 @@ export const MemberMatrix: React.FC = () => {
                 <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-100">
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center text-xs font-black border border-slate-200 shadow-sm ${assignee.avatarBg} ${assignee.textColor}`}
+                      onClick={() => setEditingMemberForAvatar(assignee.name)}
+                      className="relative group/avatar cursor-pointer shrink-0"
+                      title="Click to edit profile photo"
                     >
-                      {assignee.initials}
+                      <MemberAvatar name={assignee.name} size="lg" />
+                      <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity shadow-sm">
+                        <Camera className="w-3.5 h-3.5 text-white" />
+                      </div>
                     </div>
                     <div>
-                      <h3 className="text-sm sm:text-base font-bold text-slate-900 font-heading">
-                        {assignee.name}
-                      </h3>
+                      <div className="flex items-center gap-1.5">
+                        <h3 className="text-sm sm:text-base font-bold text-slate-900 font-heading">
+                          {assignee.name}
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => setEditingMemberForAvatar(assignee.name)}
+                          className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                          title="Edit Avatar / Photo"
+                        >
+                          <Camera className="w-3 h-3" />
+                        </button>
+                      </div>
                     </div>
                   </div>
 

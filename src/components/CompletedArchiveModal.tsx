@@ -17,6 +17,7 @@ import {
   Archive,
   CheckSquare,
 } from 'lucide-react';
+import { MemberAvatar } from './MemberAvatar';
 
 interface CompletedArchiveModalProps {
   isOpen: boolean;
@@ -260,20 +261,15 @@ export const CompletedArchiveModal: React.FC<CompletedArchiveModalProps> = ({
                     {/* Assignee Avatars */}
                     {task.assignees && task.assignees.length > 0 ? (
                       <div className="flex -space-x-1.5">
-                        {task.assignees.map((aName) => {
-                          const aConfig = ASSIGNEES.find((a) => a.name === aName);
-                          return (
-                            <div
-                              key={aName}
-                              className={`w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold border border-white shadow-sm ${
-                                aConfig?.avatarBg || 'bg-slate-100'
-                              } ${aConfig?.textColor || 'text-slate-800'}`}
-                              title={aName}
-                            >
-                              {aConfig?.initials || aName.slice(0, 2).toUpperCase()}
-                            </div>
-                          );
-                        })}
+                        {task.assignees.map((aName) => (
+                          <MemberAvatar
+                            key={aName}
+                            name={aName}
+                            size="xs"
+                            showTooltip={true}
+                            className="ring-1 ring-white"
+                          />
+                        ))}
                       </div>
                     ) : (
                       <span className="text-[11px] text-slate-400 italic">Unassigned</span>

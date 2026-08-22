@@ -29,6 +29,7 @@ import {
   CalendarCheck,
   RefreshCw,
 } from 'lucide-react';
+import { MemberAvatar } from './MemberAvatar';
 
 export const AttendanceTracker: React.FC = () => {
   const { showToast, isSupabaseConfigured } = useTaskContext();
@@ -372,11 +373,7 @@ export const AttendanceTracker: React.FC = () => {
               >
                 {/* Left: Member Identity (No position title) */}
                 <div className="flex items-center gap-3.5 min-w-[200px]">
-                  <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center text-xs font-black border border-slate-200 shadow-sm shrink-0 ${assignee.avatarBg} ${assignee.textColor}`}
-                  >
-                    {assignee.initials}
-                  </div>
+                  <MemberAvatar name={assignee.name} size="lg" />
                   <div>
                     <h4 className="text-sm font-bold text-slate-900 font-heading">
                       {assignee.name}

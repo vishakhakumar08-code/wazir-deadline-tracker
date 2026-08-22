@@ -1,7 +1,17 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
-import { Task, TaskFilterState, ViewMode, TaskStatus, Assignee, Vertical, TaskPriority, MemberStats } from '@/types/task';
+import {
+  Task,
+  TaskFilterState,
+  ViewMode,
+  TaskStatus,
+  Assignee,
+  Vertical,
+  TaskPriority,
+  MemberStats,
+  MemberProfile,
+} from '@/types/task';
 import { INITIAL_TASKS } from '@/lib/initialData';
 import { ASSIGNEES } from '@/lib/constants';
 import { getDeadlineInfo, sortTasksByDeadline } from '@/lib/deadlineUtils';
@@ -13,6 +23,9 @@ import {
   updateTaskInSupabase,
   deleteTaskInSupabase,
   subscribeToTaskChanges,
+  fetchMembersFromSupabase,
+  upsertMemberAvatarInSupabase,
+  subscribeToMemberChanges,
 } from '@/lib/supabase';
 
 interface TaskContextType {
@@ -50,6 +63,13 @@ interface TaskContextType {
   setSelectedTask: (task: Task | null) => void;
   prefilledAssignee: Assignee | null;
   openCreateModalWithAssignee: (assignee: Assignee) => void;
+
+  // Member Avatars & Profiles
+  memberAvatars: Record<string, string>;
+  getMemberAvatar: (name: string) => string | undefined;
+  updateMemberAvatar: (name: Assignee, avatarUrl: string) => Promise<void>;
+  editingMemberForAvatar: Assignee | null;
+  setEditingMemberForAvatar: (member: Assignee | null) => void;
 
   // Computed Analytics
   memberStats: MemberStats[];
@@ -98,6 +118,18 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [prefilledAssignee, setPrefilledAssignee] = useState<Assignee | null>(null);
 
+  // Member Avatars
+  const [memberAvatars, setMemberAvatars] = useState<Record<string, string>>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('wazir_member_avatars');
+        if (cached) return JSON.parse(cached);
+      } catch (e) {}
+    }
+    return {};
+  });
+  const [editingMemberForAvatar, setEditingMemberForAvatar] = useState<Assignee | null>(null);
+
   // Toast
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'warning' | 'error' } | null>(null);
 
@@ -112,6 +144,27 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loadData = useCallback(async () => {
     const creds = getSupabaseCredentials();
     setIsSupabaseConfigured(creds.isConfigured);
+
+    // Also fetch member profiles
+    if (creds.isConfigured) {
+      fetchMembersFromSupabase().then(({ data }) => {
+        if (data && Array.isArray(data)) {
+          const map: Record<string, string> = {};
+          data.forEach((m) => {
+            if (m.name && m.avatar_url) {
+              map[m.name] = m.avatar_url;
+            }
+          });
+          setMemberAvatars((prev) => {
+            const combined = { ...prev, ...map };
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('wazir_member_avatars', JSON.stringify(combined));
+            }
+            return combined;
+          });
+        }
+      });
+    }
 
     if (creds.isConfigured) {
       setRealtimeStatus('CONNECTING');
@@ -190,7 +243,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
-    const channel = subscribeToTaskChanges(
+    const taskChannel = subscribeToTaskChanges(
       (inserted) => {
         setTasks((prev) => {
           if (prev.some((t) => t.id === inserted.id)) {
@@ -221,10 +274,19 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
+    const memberChannel = subscribeToMemberChanges((member) => {
+      setMemberAvatars((prev) => {
+        const next = { ...prev, [member.name]: member.avatar_url || '' };
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('wazir_member_avatars', JSON.stringify(next));
+        }
+        return next;
+      });
+    });
+
     return () => {
-      if (channel) {
-        channel.unsubscribe();
-      }
+      if (taskChannel) taskChannel.unsubscribe();
+      if (memberChannel) memberChannel.unsubscribe();
     };
   }, [isSupabaseConfigured, showToast]);
 
@@ -234,6 +296,30 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('wazir_tasks_backup', JSON.stringify(tasks));
     }
   }, [tasks]);
+
+  // Avatar helper
+  const getMemberAvatar = useCallback((name: string): string | undefined => {
+    return memberAvatars[name] || undefined;
+  }, [memberAvatars]);
+
+  const updateMemberAvatar = useCallback(async (name: Assignee, avatarUrl: string) => {
+    // 1. Optimistic UI update
+    setMemberAvatars((prev) => {
+      const next = { ...prev, [name]: avatarUrl };
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('wazir_member_avatars', JSON.stringify(next));
+      }
+      return next;
+    });
+
+    // 2. Persist to Supabase
+    const { error } = await upsertMemberAvatarInSupabase(name, avatarUrl);
+    if (error) {
+      console.error('[Supabase member avatar update error]:', error);
+      // Still preserved locally
+    }
+    showToast(`Updated avatar for ${name}!`, 'success');
+  }, [showToast]);
 
   // Filter modifier
   const setFilter = (key: keyof TaskFilterState, value: any) => {
@@ -261,38 +347,41 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updated_at: new Date().toISOString(),
     };
 
-    // Optimistic UI update
+    // Optimistic Update
     setTasks((prev) => [newTask, ...prev]);
+    showToast(`Deliverable "${newTask.title}" added!`, 'success');
 
     if (isSupabaseConfigured) {
       const { data, error } = await createTaskInSupabase(newTask);
       if (error) {
-        console.error('[createTaskInSupabase failed]:', error);
-        showToast(`Failed to save to database: ${error.message || error.details || 'Check RLS policy'}`, 'error');
+        console.error('[Supabase addTask error]:', error);
+        showToast(`Saved locally (Supabase: ${error.message || 'Insert failed'})`, 'warning');
       } else if (data) {
-        setTasks((prev) => prev.map((t) => (t.id === newTask.id ? data : t)));
-        showToast(`Saved "${data.title}" to Supabase!`, 'success');
+        setTasks((prev) => prev.map((t) => (t.id === validUUID ? data : t)));
       }
-    } else {
-      showToast(`Created "${newTask.title}" in sandbox`, 'success');
     }
   };
 
   const updateTask = async (id: string, updates: Partial<Task>) => {
-    const now = new Date().toISOString();
+    const normalizedUpdates = {
+      ...updates,
+      status: updates.status === ('Backlog' as any) ? 'To Do' : updates.status,
+      updated_at: new Date().toISOString(),
+    };
+
     setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, ...updates, updated_at: now } : t))
+      prev.map((t) => (t.id === id ? { ...t, ...normalizedUpdates } : t))
     );
 
-    if (selectedTask?.id === id) {
-      setSelectedTask((prev) => (prev ? { ...prev, ...updates, updated_at: now } : null));
+    if (selectedTask && selectedTask.id === id) {
+      setSelectedTask((prev) => (prev ? { ...prev, ...normalizedUpdates } : null));
     }
 
     if (isSupabaseConfigured) {
-      const { error } = await updateTaskInSupabase(id, updates);
+      const { error } = await updateTaskInSupabase(id, normalizedUpdates);
       if (error) {
-        console.error('[updateTaskInSupabase failed]:', error);
-        showToast(`Failed to update in database: ${error.message || 'Error saving changes'}`, 'error');
+        console.error('[Supabase updateTask error]:', error);
+        showToast(`Updated locally (Supabase: ${error.message || 'Update failed'})`, 'warning');
       }
     }
   };
@@ -303,28 +392,20 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (selectedTask?.id === id) {
       setSelectedTask(null);
     }
+    showToast(`Deliverable deleted`, 'info');
 
     if (isSupabaseConfigured) {
       const { error } = await deleteTaskInSupabase(id);
       if (error) {
-        console.error('[deleteTaskInSupabase failed]:', error);
-        showToast(`Failed to delete from database: ${error.message || 'Error deleting row'}`, 'error');
-      } else {
-        showToast(`Deleted "${taskToDelete?.title || 'Deliverable'}"`, 'warning');
+        console.error('[Supabase deleteTask error]:', error);
+        showToast(`Deleted locally (Supabase: ${error.message || 'Delete failed'})`, 'warning');
       }
-    } else {
-      showToast(`Deleted "${taskToDelete?.title || 'Deliverable'}"`, 'warning');
     }
   };
 
   const moveTaskStatus = async (id: string, newStatus: TaskStatus) => {
-    const task = tasks.find((t) => t.id === id);
-    if (!task || task.status === newStatus) return;
-
     await updateTask(id, { status: newStatus });
-    if (newStatus === 'Completed') {
-      showToast(`🎉 "${task.title}" marked as Completed!`, 'success');
-    }
+    showToast(`Status updated to ${newStatus}`, 'info');
   };
 
   const toggleSubtask = async (taskId: string, subtaskId: string) => {
@@ -336,6 +417,11 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 
     await updateTask(taskId, { subtasks: updatedSubtasks });
+  };
+
+  const reconnectSupabase = () => {
+    loadData();
+    showToast('Re-syncing with Supabase real-time backend...', 'info');
   };
 
   // Filtered Tasks computation
@@ -394,6 +480,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Executive KPI Summary computation
   const stats = useMemo(() => {
+    const total = tasks.length;
     let urgent = 0;
     let overdue = 0;
     let due24h = 0;
@@ -402,20 +489,17 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let inReview = 0;
     let toDo = 0;
 
-    tasks.forEach((task) => {
-      if (task.status === 'Completed') completed++;
-      if (task.status === 'In Progress') inProgress++;
-      if (task.status === 'Review') inReview++;
-      if (task.status === 'To Do' || (task.status as any) === 'Backlog') toDo++;
-
-      if (task.priority === 'Urgent' && task.status !== 'Completed') urgent++;
-
-      const info = getDeadlineInfo(task.deadline, task.status);
-      if (info.isOverdue) overdue++;
-      if (info.isDueSoon) due24h++;
+    tasks.forEach((t) => {
+      const dInfo = getDeadlineInfo(t.deadline, t.status);
+      if (t.priority === 'Urgent') urgent++;
+      if (dInfo.isOverdue && t.status !== 'Completed') overdue++;
+      if (dInfo.isDueSoon && t.status !== 'Completed') due24h++;
+      if (t.status === 'Completed') completed++;
+      if (t.status === 'In Progress') inProgress++;
+      if (t.status === 'Review') inReview++;
+      if (t.status === 'To Do' || (t.status as any) === 'Backlog') toDo++;
     });
 
-    const total = tasks.length;
     const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
 
     return {
@@ -427,16 +511,17 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       inProgress,
       inReview,
       toDo,
-      backlog: toDo, // Alias for backwards compatibility
+      backlog: toDo,
       completionRate,
     };
   }, [tasks]);
 
-  // Member Matrix Analytics computation (for all 10 assignees)
+  // Member Workload & Matrix Computation
   const memberStats: MemberStats[] = useMemo(() => {
     return ASSIGNEES.map((assignee) => {
       const memberTasks = tasks.filter((t) => t.assignees && t.assignees.includes(assignee.name));
       const total = memberTasks.length;
+      let active = 0;
       let inProgress = 0;
       let inReview = 0;
       let completed = 0;
@@ -444,18 +529,20 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let dueSoon = 0;
 
       memberTasks.forEach((t) => {
-        if (t.status === 'Completed') completed++;
-        if (t.status === 'In Progress') inProgress++;
-        if (t.status === 'Review') inReview++;
-
-        const info = getDeadlineInfo(t.deadline, t.status);
-        if (info.isOverdue) overdue++;
-        if (info.isDueSoon) dueSoon++;
+        const dInfo = getDeadlineInfo(t.deadline, t.status);
+        if (t.status === 'Completed') {
+          completed++;
+        } else {
+          active++;
+          if (t.status === 'In Progress') inProgress++;
+          if (t.status === 'Review') inReview++;
+          if (dInfo.isOverdue) overdue++;
+          if (dInfo.isDueSoon) dueSoon++;
+        }
       });
 
-      const active = total - completed;
-      // Workload score calculation based on active tasks & urgency
-      const workloadScore = inProgress * 2 + inReview * 1.5 + overdue * 3 + dueSoon * 2;
+      // Workload Score Calculation: weight overdue heavily, then dueSoon, then active
+      const workloadScore = (overdue * 3) + (dueSoon * 2) + active;
 
       return {
         member: assignee.name,
@@ -484,7 +571,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isSupabaseConfigured,
         realtimeStatus,
         lastSyncTime,
-        reconnectSupabase: loadData,
+        reconnectSupabase,
         addTask,
         updateTask,
         deleteTask,
@@ -502,6 +589,11 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSelectedTask,
         prefilledAssignee,
         openCreateModalWithAssignee,
+        memberAvatars,
+        getMemberAvatar,
+        updateMemberAvatar,
+        editingMemberForAvatar,
+        setEditingMemberForAvatar,
         memberStats,
         stats,
         toast,

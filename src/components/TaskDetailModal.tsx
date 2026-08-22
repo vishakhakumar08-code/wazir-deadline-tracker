@@ -24,6 +24,7 @@ import {
   Minus,
   Users,
 } from 'lucide-react';
+import { MemberAvatar } from './MemberAvatar';
 
 export const TaskDetailModal: React.FC = () => {
   const {
@@ -422,13 +423,7 @@ export const TaskDetailModal: React.FC = () => {
                         key={assigneeName}
                         className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200"
                       >
-                        <div
-                          className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold ${
-                            assignee?.avatarBg || 'bg-slate-100'
-                          } ${assignee?.textColor || 'text-slate-800'}`}
-                        >
-                          {assignee?.initials || assigneeName.substring(0, 2).toUpperCase()}
-                        </div>
+                        <MemberAvatar name={assigneeName} size="xs" />
                         <div>
                           <p className="text-xs font-bold text-slate-900">{assigneeName}</p>
                         </div>
@@ -504,14 +499,9 @@ export const TaskDetailModal: React.FC = () => {
                             : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                         }`}
                       >
-                        <div
-                          className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 ${
-                            isSelected ? 'bg-blue-600 text-white' : assignee.avatarBg
-                          }`}
-                        >
-                          {isSelected ? '✓' : assignee.initials}
-                        </div>
+                        <MemberAvatar name={assignee.name} size="xs" />
                         <span className="truncate">{assignee.name}</span>
+                        {isSelected && <span className="text-[10px] text-blue-600 font-bold ml-auto">✓</span>}
                       </button>
                     );
                   })}
