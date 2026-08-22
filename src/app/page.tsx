@@ -4,6 +4,7 @@ import React from 'react';
 import { useTaskContext } from '@/context/TaskContext';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
+import { SearchBar } from '@/components/SearchBar';
 import { StatsOverview } from '@/components/StatsOverview';
 import { FilterBar } from '@/components/FilterBar';
 import { KanbanBoard } from '@/components/KanbanBoard';
@@ -49,6 +50,13 @@ export default function Home() {
         <div className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto pb-24 md:pb-8">
           {/* Top Header */}
           <Header />
+
+          {/* Mobile Global Search Bar (< md) */}
+          {viewMode !== 'attendance' && (
+            <div className="md:hidden mb-3.5">
+              <SearchBar placeholder="Search deliverables, verticals, or members..." />
+            </div>
+          )}
 
           {/* KPI Stat Cards and Filter Bar (shown on Kanban and Matrix views) */}
           {viewMode !== 'attendance' && (

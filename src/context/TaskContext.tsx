@@ -380,7 +380,8 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const matchesDesc = task.description.toLowerCase().includes(q);
         const matchesVertical = task.vertical.toLowerCase().includes(q);
         const matchesAssignees = task.assignees && task.assignees.some((a) => a.toLowerCase().includes(q));
-        if (!matchesTitle && !matchesDesc && !matchesVertical && !matchesAssignees) {
+        const matchesSubtasks = task.subtasks && task.subtasks.some((st) => st.title.toLowerCase().includes(q));
+        if (!matchesTitle && !matchesDesc && !matchesVertical && !matchesAssignees && !matchesSubtasks) {
           return false;
         }
       }
