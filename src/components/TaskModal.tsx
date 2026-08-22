@@ -121,7 +121,7 @@ export const TaskModal: React.FC = () => {
         title: title.trim(),
         description: description.trim(),
         vertical,
-        assignees: selectedAssignees, // Empty array if unassigned, or manually selected members
+        assignees: selectedAssignees,
         status,
         priority,
         deadline: new Date(deadline).toISOString(),
@@ -129,47 +129,50 @@ export const TaskModal: React.FC = () => {
         resources,
       });
 
-      // Reset form
+      // Reset Form State
       setTitle('');
       setDescription('');
+      setVertical('Editorial');
       setSelectedAssignees([]);
+      setStatus('To Do');
+      setPriority('Medium');
       setSubtasks([]);
       setResources([]);
       setIsCreateModalOpen(false);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to create task:', err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-wazir-card border-t md:border border-wazir-border rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] md:max-h-[calc(100vh-80px)] my-0 md:my-8 flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/40 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-2xl bg-white border-t md:border border-slate-200 rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] md:max-h-[calc(100vh-80px)] my-0 md:my-8 flex flex-col">
         {/* Mobile Swipe Handle Indicator */}
-        <div className="md:hidden flex justify-center pt-2.5 pb-1 bg-slate-900/80">
-          <div className="w-12 h-1.5 rounded-full bg-slate-700" />
+        <div className="md:hidden flex justify-center pt-2.5 pb-1 bg-slate-100">
+          <div className="w-12 h-1.5 rounded-full bg-slate-300" />
         </div>
 
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5 border-b border-wazir-border/60 bg-slate-900/60 shrink-0">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5 border-b border-slate-100 bg-slate-50/50 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-bold text-white font-heading">
-                Create New Deliverable
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 font-heading">
+                New Deliverable / Project
               </h3>
-              <p className="text-[11px] sm:text-xs text-slate-400">
-                Wazir - The Strategy &amp; Consulting Club
+              <p className="text-xs text-slate-500">
+                Create and allocate a deliverable across club verticals
               </p>
             </div>
           </div>
 
           <button
             onClick={() => setIsCreateModalOpen(false)}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />
           </button>
@@ -179,17 +182,16 @@ export const TaskModal: React.FC = () => {
         <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-5 overflow-y-auto scrollbar-thin">
           {/* Title */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
               Deliverable Title *
             </label>
             <input
               type="text"
               required
-              autoFocus
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Casebook 2026 - M&A Strategy Sector Deck"
-              className="w-full bg-slate-900 border border-wazir-border rounded-xl px-4 py-3 sm:py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all font-medium min-h-[44px]"
+              placeholder="e.g. Sponsor deck v2, Newsletter layout, Conclave pitch..."
+              className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 font-medium min-h-[44px]"
             />
           </div>
 
@@ -197,13 +199,13 @@ export const TaskModal: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Vertical Selector */}
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
                 Club Vertical *
               </label>
               <select
                 value={vertical}
                 onChange={(e) => setVertical(e.target.value as Vertical)}
-                className="w-full bg-slate-900 border border-wazir-border rounded-xl px-3.5 py-3 sm:py-2.5 text-sm text-white focus:outline-none focus:border-sky-500 font-medium cursor-pointer min-h-[44px]"
+                className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 font-medium cursor-pointer min-h-[44px]"
               >
                 {VERTICALS.map((v) => (
                   <option key={v.id} value={v.id}>
@@ -213,9 +215,9 @@ export const TaskModal: React.FC = () => {
               </select>
             </div>
 
-            {/* Priority Selector */}
+            {/* Priority Level */}
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
                 Priority Level *
               </label>
               <div className="grid grid-cols-4 gap-1.5">
@@ -226,15 +228,15 @@ export const TaskModal: React.FC = () => {
                       key={p.id}
                       type="button"
                       onClick={() => setPriority(p.id)}
-                      className={`py-2.5 sm:py-2 px-1 rounded-xl text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 min-h-[44px] cursor-pointer ${
+                      className={`py-2 px-1 rounded-xl text-xs font-semibold transition-all flex flex-col items-center justify-center gap-1 min-h-[44px] cursor-pointer ${
                         isSelected
-                          ? `${p.badge} ring-2 ring-amber-400/50 shadow-md`
-                          : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                          ? `${p.badge} ring-2 ring-blue-500 font-bold shadow-sm`
+                          : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
                       }`}
                     >
-                      {p.id === 'Urgent' && <Flame className="w-3.5 h-3.5 text-red-400" />}
-                      {p.id === 'High' && <AlertTriangle className="w-3.5 h-3.5 text-orange-400" />}
-                      {p.id === 'Medium' && <Clock className="w-3.5 h-3.5 text-amber-400" />}
+                      {p.id === 'Urgent' && <Flame className="w-3.5 h-3.5 text-red-500" />}
+                      {p.id === 'High' && <AlertTriangle className="w-3.5 h-3.5 text-orange-500" />}
+                      {p.id === 'Medium' && <Clock className="w-3.5 h-3.5 text-amber-500" />}
                       {p.id === 'Low' && <Minus className="w-3.5 h-3.5 text-slate-400" />}
                       <span>{p.label}</span>
                     </button>
@@ -244,61 +246,87 @@ export const TaskModal: React.FC = () => {
             </div>
           </div>
 
-          {/* Assignees Selection */}
+          {/* Target Deadline with Quick Presets */}
           <div>
-            <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5 text-amber-400" />
-                Assign Junior Team Members
-                {selectedAssignees.length === 0 ? (
-                  <span className="text-[11px] font-normal text-amber-400/90 lowercase">
-                    (currently unassigned)
-                  </span>
-                ) : (
-                  <span className="text-[11px] font-bold text-amber-300">
-                    ({selectedAssignees.length}/{ASSIGNEES.length} selected)
-                  </span>
-                )}
+            <div className="flex flex-wrap items-center justify-between gap-1.5 mb-1.5">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                Target Deadline *
               </label>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-slate-400">Quick:</span>
+                <button
+                  type="button"
+                  onClick={() => setQuickDeadline(6)}
+                  className="text-[11px] px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 cursor-pointer"
+                >
+                  +6h
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setQuickDeadline(24)}
+                  className="text-[11px] px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-blue-700 border border-slate-200 cursor-pointer"
+                >
+                  +24h
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setQuickDeadline(72)}
+                  className="text-[11px] px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-emerald-700 border border-slate-200 cursor-pointer"
+                >
+                  +3d
+                </button>
+              </div>
+            </div>
+            <div className="relative">
+              <Calendar className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <input
+                type="datetime-local"
+                required
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+                className="w-full bg-white border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 font-medium min-h-[44px]"
+              />
+            </div>
+          </div>
 
+          {/* Assignees (Manual Multi-select) */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5 text-blue-600" />
+                Assign Team Members ({selectedAssignees.length})
+              </label>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => {
                     if (selectedAssignees.length === ASSIGNEES.length) {
-                      setSelectedAssignees([]);
+                      clearAllAssignees();
                     } else {
                       setSelectedAssignees(ASSIGNEES.map((a) => a.name));
                     }
                   }}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 border transition-all cursor-pointer min-h-[38px] ${
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer min-h-[34px] ${
                     selectedAssignees.length === ASSIGNEES.length
-                      ? 'bg-amber-500 text-wazir-midnight border-amber-400 shadow-md shadow-amber-500/30'
-                      : 'bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border-sky-500/40'
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200'
                   }`}
                 >
-                  <Users className="w-3.5 h-3.5" />
-                  <span>
-                    {selectedAssignees.length === ASSIGNEES.length
-                      ? '✓ Entire Team Selected'
-                      : '⚡ Select All / Entire Team'}
-                  </span>
+                  {selectedAssignees.length === ASSIGNEES.length
+                    ? '✓ Entire Team (Deselect)'
+                    : '⚡ Select All / Entire Team'}
                 </button>
                 {selectedAssignees.length > 0 && selectedAssignees.length < ASSIGNEES.length && (
                   <button
                     type="button"
                     onClick={clearAllAssignees}
-                    className="text-xs text-slate-400 hover:text-red-400 transition-colors py-1 px-2"
+                    className="text-xs text-slate-500 hover:text-red-600 transition-colors"
                   >
                     Clear
                   </button>
                 )}
               </div>
             </div>
-
-            <p className="text-[11px] text-slate-400 mb-2">
-              Select team members or click <strong>Entire Team</strong> to assign to all 10 members.
-            </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
               {ASSIGNEES.map((assignee) => {
@@ -308,128 +336,96 @@ export const TaskModal: React.FC = () => {
                     key={assignee.name}
                     type="button"
                     onClick={() => toggleAssignee(assignee.name)}
-                    className={`p-2.5 sm:p-2 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all text-left min-h-[44px] cursor-pointer ${
+                    className={`p-2.5 sm:p-2 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all min-h-[44px] cursor-pointer ${
                       isSelected
-                        ? 'bg-amber-500/20 border-amber-500/60 text-amber-300 shadow-sm ring-1 ring-amber-400/40'
-                        : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                        ? 'bg-blue-50 border-blue-300 text-blue-800 ring-1 ring-blue-400/40 shadow-sm'
+                        : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                     }`}
                   >
                     <div
-                      className={`w-6 h-6 sm:w-5 sm:h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 ${
-                        isSelected ? 'bg-amber-400 text-wazir-midnight' : assignee.avatarBg
+                      className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                        isSelected ? 'bg-blue-600 text-white' : assignee.avatarBg
                       }`}
                     >
-                      {isSelected ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : assignee.initials}
+                      {isSelected ? '✓' : assignee.initials}
                     </div>
                     <span className="truncate">{assignee.name}</span>
                   </button>
                 );
               })}
             </div>
+            {selectedAssignees.length === 0 && (
+              <p className="text-[11px] text-amber-600 mt-1.5 flex items-center gap-1">
+                <UserX className="w-3 h-3" />
+                <span>Starts as unassigned until members are checked.</span>
+              </p>
+            )}
           </div>
 
-          {/* Deadline Date & Time Picker + Quick Presets */}
+          {/* Workflow Stage */}
           <div>
-            <div className="flex flex-wrap items-center justify-between gap-1.5 mb-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                Deadline Date &amp; Time *
-              </label>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] text-slate-400">Quick:</span>
-                <button
-                  type="button"
-                  onClick={() => setQuickDeadline(6)}
-                  className="text-[11px] px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 cursor-pointer min-h-[32px]"
-                >
-                  In 6 hrs
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setQuickDeadline(24)}
-                  className="text-[11px] px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 cursor-pointer min-h-[32px]"
-                >
-                  In 24 hrs
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setQuickDeadline(72)}
-                  className="text-[11px] px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 cursor-pointer min-h-[32px]"
-                >
-                  In 3 days
-                </button>
-              </div>
-            </div>
-            <div className="relative">
-              <Calendar className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-400 pointer-events-none" />
-              <input
-                type="datetime-local"
-                required
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                className="w-full bg-slate-900 border border-wazir-border rounded-xl pl-10 pr-4 py-3 sm:py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 font-medium min-h-[44px]"
-              />
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+              Initial Workflow Stage
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {STATUSES.map((st) => {
+                const isSelected = status === st.id;
+                return (
+                  <button
+                    key={st.id}
+                    type="button"
+                    onClick={() => setStatus(st.id)}
+                    className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-all flex items-center justify-center gap-2 min-h-[44px] cursor-pointer ${
+                      isSelected
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                        : 'bg-white text-slate-600 hover:text-slate-900 border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span
+                      className={`w-2 h-2 rounded-full ${
+                        isSelected ? 'bg-white' : st.dotColor
+                      }`}
+                    />
+                    <span>{st.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-              Context &amp; Description
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+              Description / Notes
             </label>
             <textarea
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Outline deliverables, objectives, review steps, or dependencies..."
-              className="w-full bg-slate-900 border border-wazir-border rounded-xl px-4 py-3 sm:py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 resize-none font-normal"
+              placeholder="Key instructions, deliverables, requirements, or meeting notes..."
+              className="w-full bg-white border border-slate-300 rounded-xl p-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 font-normal resize-none"
             ></textarea>
           </div>
 
-          {/* Checklist / Subtasks Builder */}
+          {/* Checklist Subtasks */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center justify-between">
-              <span className="flex items-center gap-1.5">
-                <ListTodo className="w-3.5 h-3.5 text-sky-400" />
-                Deliverable Checklist ({subtasks.length})
-              </span>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center gap-1.5">
+              <ListTodo className="w-3.5 h-3.5 text-blue-600" />
+              Checklist / Subtasks ({subtasks.length})
             </label>
-            
-            <div className="flex gap-2 mb-2">
-              <input
-                type="text"
-                value={newSubtaskTitle}
-                onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddSubtask();
-                  }
-                }}
-                placeholder="Add sub-deliverable or milestone..."
-                className="flex-1 bg-slate-900 border border-wazir-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 min-h-[44px]"
-              />
-              <button
-                type="button"
-                onClick={() => handleAddSubtask()}
-                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 flex items-center gap-1 min-h-[44px] cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Add
-              </button>
-            </div>
 
             {subtasks.length > 0 && (
-              <div className="space-y-1.5 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+              <div className="space-y-1.5 mb-2">
                 {subtasks.map((st) => (
                   <div
                     key={st.id}
-                    className="flex items-center justify-between gap-2 bg-slate-900 p-2.5 rounded-lg border border-slate-800 text-xs text-slate-200"
+                    className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800"
                   >
                     <span className="truncate">{st.title}</span>
                     <button
                       type="button"
                       onClick={() => handleRemoveSubtask(st.id)}
-                      className="text-slate-500 hover:text-red-400 p-1.5 min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
+                      className="text-slate-400 hover:text-red-600 transition-colors p-1"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -437,46 +433,48 @@ export const TaskModal: React.FC = () => {
                 ))}
               </div>
             )}
-          </div>
 
-          {/* Initial Status */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-              Initial Workflow Column
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {STATUSES.map((st) => (
-                <button
-                  key={st.id}
-                  type="button"
-                  onClick={() => setStatus(st.id)}
-                  className={`py-2.5 sm:py-2 px-2 rounded-xl text-xs font-semibold border transition-all min-h-[44px] cursor-pointer ${
-                    status === st.id
-                      ? 'bg-sky-500/20 border-sky-500 text-sky-300 shadow-sm'
-                      : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
-                  }`}
-                >
-                  {st.label}
-                </button>
-              ))}
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newSubtaskTitle}
+                onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                placeholder="Add subtask or checkpoint..."
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddSubtask();
+                  }
+                }}
+                className="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 min-h-[44px]"
+              />
+              <button
+                type="button"
+                onClick={() => handleAddSubtask()}
+                className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 flex items-center gap-1 min-h-[44px] cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Add
+              </button>
             </div>
           </div>
 
-          {/* Footer Actions */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-wazir-border/60 pb-2">
+          {/* Submit & Cancel Buttons */}
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
             <button
               type="button"
               onClick={() => setIsCreateModalOpen(false)}
-              className="px-4 py-3 sm:py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold transition-colors min-h-[44px] cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer min-h-[44px]"
             >
               Cancel
             </button>
+
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-6 py-3 sm:py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-wazir-midnight font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all cursor-pointer min-h-[44px]"
+              className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm shadow-sm transition-all flex items-center gap-2 cursor-pointer min-h-[44px]"
             >
-              <Plus className="w-4 h-4 stroke-[3]" />
+              <Plus className="w-4 h-4" />
               <span>{isSubmitting ? 'Creating...' : 'Create Deliverable'}</span>
             </button>
           </div>

@@ -11,14 +11,11 @@ export interface DeadlineInfo {
   badgeClass: string;
   dotClass: string;
   cardBorderHighlight: string;
+  isOverdueCard: boolean;
 }
 
 /**
- * Calculates real-time deadline status and styling
- * Overdue = Red
- * Due in 24 hrs = Amber
- * Later = Green
- * Completed = Slate / Muted
+ * Calculates real-time deadline status and styling for light mode
  */
 export function getDeadlineInfo(deadlineStr: string, status: TaskStatus): DeadlineInfo {
   const isCompleted = status === 'Completed';
@@ -44,11 +41,12 @@ export function getDeadlineInfo(deadlineStr: string, status: TaskStatus): Deadli
       isDueSoon: false,
       isUpcoming: false,
       isCompleted: true,
-      timeRemainingText: 'Completed',
+      timeRemainingText: 'completed',
       formattedDate,
-      badgeClass: 'bg-emerald-950/40 text-emerald-400/80 border-emerald-800/40',
-      dotClass: 'bg-emerald-400',
-      cardBorderHighlight: 'hover:border-emerald-500/30',
+      badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      dotClass: 'bg-emerald-500',
+      cardBorderHighlight: 'border-slate-200 opacity-90',
+      isOverdueCard: false,
     };
   }
 
@@ -58,13 +56,13 @@ export function getDeadlineInfo(deadlineStr: string, status: TaskStatus): Deadli
     const absHours = Math.abs(diffHours);
     const absDays = Math.abs(diffDays);
 
-    let text = 'Overdue';
+    let text = 'overdue';
     if (absMinutes < 60) {
-      text = `Overdue by ${absMinutes}m`;
+      text = `overdue by ${absMinutes}m`;
     } else if (absHours < 24) {
-      text = `Overdue by ${absHours}h`;
-    } else {
-      text = `Overdue by ${absDays}d`;
+      text = `overdue by ${absHours}h`;
+    } else if (absDays > 0) {
+      text = `overdue by ${absDays}d`;
     }
 
     return {
@@ -75,20 +73,20 @@ export function getDeadlineInfo(deadlineStr: string, status: TaskStatus): Deadli
       isCompleted: false,
       timeRemainingText: text,
       formattedDate,
-      badgeClass: 'bg-red-500/20 text-red-400 border-red-500/40 font-medium animate-pulse-slow',
-      dotClass: 'bg-red-500 animate-ping-slow',
-      cardBorderHighlight: 'border-l-4 border-l-red-500 border-red-500/30',
+      badgeClass: 'bg-red-50 text-red-700 border-red-200 font-medium',
+      dotClass: 'bg-red-500',
+      cardBorderHighlight: 'bg-red-50/80 border-red-200',
+      isOverdueCard: true,
     };
   }
 
   // 2. Due in <= 24 hours -> AMBER
   if (diffMs <= 24 * 60 * 60 * 1000) {
-    let text = 'Due today';
+    let text = 'due today';
     if (diffHours === 0) {
-      text = `Due in ${Math.max(1, diffMinutes)}m`;
+      text = `due in ${Math.max(1, diffMinutes)}m`;
     } else if (diffHours < 24) {
-      const remainingMinutes = diffMinutes % 60;
-      text = remainingMinutes > 0 ? `Due in ${diffHours}h ${remainingMinutes}m` : `Due in ${diffHours}h`;
+      text = `due in ${diffHours}h`;
     }
 
     return {
@@ -99,16 +97,19 @@ export function getDeadlineInfo(deadlineStr: string, status: TaskStatus): Deadli
       isCompleted: false,
       timeRemainingText: text,
       formattedDate,
-      badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-medium',
-      dotClass: 'bg-amber-400 animate-pulse',
-      cardBorderHighlight: 'border-l-4 border-l-amber-500 border-amber-500/30',
+      badgeClass: 'bg-amber-50 text-amber-700 border-amber-200 font-medium',
+      dotClass: 'bg-amber-500',
+      cardBorderHighlight: 'border-amber-200',
+      isOverdueCard: false,
     };
   }
 
-  // 3. Due Later (> 24 hours) -> GREEN
-  let text = `${diffDays} days left`;
+  // 3. Due Later (> 24 hours) -> GREEN / NEUTRAL
+  let text = `due in ${diffDays} days`;
   if (diffDays === 1) {
-    text = 'Tomorrow';
+    text = 'due tomorrow';
+  } else if (diffDays <= 0) {
+    text = 'due today';
   }
 
   return {
@@ -119,9 +120,10 @@ export function getDeadlineInfo(deadlineStr: string, status: TaskStatus): Deadli
     isCompleted: false,
     timeRemainingText: text,
     formattedDate,
-    badgeClass: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
-    dotClass: 'bg-emerald-400',
-    cardBorderHighlight: 'border-l-4 border-l-emerald-500/40 hover:border-emerald-500/50',
+    badgeClass: 'bg-slate-100 text-slate-600 border-slate-200',
+    dotClass: 'bg-slate-400',
+    cardBorderHighlight: 'border-slate-200/90',
+    isOverdueCard: false,
   };
 }
 
@@ -150,4 +152,3 @@ export function sortTasksByDeadline<T extends { deadline?: string }>(tasks: T[])
     return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
   });
 }
-

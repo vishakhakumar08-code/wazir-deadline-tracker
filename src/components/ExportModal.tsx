@@ -102,24 +102,24 @@ export const ExportModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-wazir-card border-t md:border border-wazir-border rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] md:max-h-[calc(100vh-80px)] my-0 md:my-8 flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/40 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-2xl bg-white border-t md:border border-slate-200 rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] md:max-h-[calc(100vh-80px)] my-0 md:my-8 flex flex-col">
         {/* Mobile Swipe Handle Indicator */}
-        <div className="md:hidden flex justify-center pt-2.5 pb-1 bg-slate-900/80">
-          <div className="w-12 h-1.5 rounded-full bg-slate-700" />
+        <div className="md:hidden flex justify-center pt-2.5 pb-1 bg-slate-100">
+          <div className="w-12 h-1.5 rounded-full bg-slate-300" />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5 border-b border-wazir-border/60 bg-slate-900/80 shrink-0">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5 border-b border-slate-100 bg-slate-50/70 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
               <Download className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white font-heading">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 font-heading">
                 Export Club Deliverables &amp; MoM
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 Wazir - The Strategy &amp; Consulting Club Meeting Report
               </p>
             </div>
@@ -127,7 +127,7 @@ export const ExportModal: React.FC = () => {
 
           <button
             onClick={() => setIsExportModalOpen(false)}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -139,53 +139,53 @@ export const ExportModal: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <button
               onClick={handleCopyMarkdown}
-              className="p-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-left flex flex-col justify-between group transition-all cursor-pointer"
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-amber-50/60 border border-slate-200 hover:border-amber-200 text-left flex flex-col justify-between group transition-all cursor-pointer shadow-sm"
             >
               <div className="flex items-center justify-between mb-2">
-                <FileText className="w-5 h-5 text-amber-400" />
-                {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-slate-400 group-hover:text-white" />}
+                <FileText className="w-5 h-5 text-amber-600" />
+                {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-slate-400 group-hover:text-slate-700" />}
               </div>
               <div>
-                <p className="text-xs font-bold text-white">Copy MoM</p>
-                <p className="text-[10px] text-slate-400">Markdown format</p>
+                <p className="text-xs font-bold text-slate-900">Copy MoM</p>
+                <p className="text-[10px] text-slate-500">Markdown format</p>
               </div>
             </button>
 
             <button
               onClick={handleDownloadCSV}
-              className="p-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-left flex flex-col justify-between group transition-all cursor-pointer"
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-emerald-50/60 border border-slate-200 hover:border-emerald-200 text-left flex flex-col justify-between group transition-all cursor-pointer shadow-sm"
             >
               <div className="flex items-center justify-between mb-2">
-                <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
-                <Download className="w-4 h-4 text-slate-400 group-hover:text-white" />
+                <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
+                <Download className="w-4 h-4 text-slate-400 group-hover:text-slate-700" />
               </div>
               <div>
-                <p className="text-xs font-bold text-white">Download CSV</p>
-                <p className="text-[10px] text-slate-400">Excel / Google Sheets</p>
+                <p className="text-xs font-bold text-slate-900">Download CSV</p>
+                <p className="text-[10px] text-slate-500">Excel / Google Sheets</p>
               </div>
             </button>
 
             <button
               onClick={handleDownloadJSON}
-              className="p-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-left flex flex-col justify-between group transition-all cursor-pointer"
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/60 border border-slate-200 hover:border-blue-200 text-left flex flex-col justify-between group transition-all cursor-pointer shadow-sm"
             >
               <div className="flex items-center justify-between mb-2">
-                <FileCode className="w-5 h-5 text-sky-400" />
-                <Download className="w-4 h-4 text-slate-400 group-hover:text-white" />
+                <FileCode className="w-5 h-5 text-blue-600" />
+                <Download className="w-4 h-4 text-slate-400 group-hover:text-slate-700" />
               </div>
               <div>
-                <p className="text-xs font-bold text-white">Download JSON</p>
-                <p className="text-[10px] text-slate-400">Raw database backup</p>
+                <p className="text-xs font-bold text-slate-900">Download JSON</p>
+                <p className="text-[10px] text-slate-500">Raw database backup</p>
               </div>
             </button>
           </div>
 
           {/* MoM Preview */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
               Minutes of Meeting (MoM) Preview
             </label>
-            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 max-h-[260px] overflow-y-auto font-mono text-xs text-slate-300 whitespace-pre-wrap leading-relaxed">
+            <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 max-h-[260px] overflow-y-auto font-mono text-xs text-slate-200 whitespace-pre-wrap leading-relaxed shadow-sm">
               {momMarkdown}
             </div>
           </div>
