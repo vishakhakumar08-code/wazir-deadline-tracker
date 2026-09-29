@@ -94,6 +94,7 @@ export const STATUSES: {
   id: TaskStatus;
   label: string;
   color: string;
+  dotColor: string;
   headerBg: string;
   headerText: string;
   borderAccent: string;
@@ -102,6 +103,7 @@ export const STATUSES: {
     id: 'To Do',
     label: 'TO DO',
     color: '#0284c7',
+    dotColor: 'bg-sky-500',
     headerBg: 'bg-[#38BDF8]',
     headerText: 'text-black',
     borderAccent: 'border-black',
@@ -110,7 +112,17 @@ export const STATUSES: {
     id: 'In Progress',
     label: 'IN PROGRESS',
     color: '#eab308',
+    dotColor: 'bg-amber-500',
     headerBg: 'bg-[#FACC15]',
+    headerText: 'text-black',
+    borderAccent: 'border-black',
+  },
+  {
+    id: 'Review',
+    label: 'REVIEW',
+    color: '#a855f7',
+    dotColor: 'bg-purple-500',
+    headerBg: 'bg-[#C084FC]',
     headerText: 'text-black',
     borderAccent: 'border-black',
   },
@@ -118,6 +130,7 @@ export const STATUSES: {
     id: 'Completed',
     label: 'COMPLETE',
     color: '#22c55e',
+    dotColor: 'bg-emerald-500',
     headerBg: 'bg-[#4ADE80]',
     headerText: 'text-black',
     borderAccent: 'border-black',
