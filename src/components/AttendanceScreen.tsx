@@ -111,7 +111,7 @@ export const AttendanceScreen: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto flex flex-col items-center space-y-6 pb-12">
+    <div className="w-full max-w-5xl lg:max-w-6xl mx-auto flex flex-col items-center space-y-6 pb-12">
       {/* Title */}
       <div className="text-center space-y-1">
         <h1 className="font-pixel text-xl sm:text-3xl text-black tracking-widest font-bold">
@@ -122,9 +122,11 @@ export const AttendanceScreen: React.FC = () => {
       {/* Date Navigation Bar */}
       <div className="flex items-center gap-3 bg-white border-2 border-black p-1.5 shadow-[3px_3px_0px_0px_#000000]">
         <button
+          type="button"
           onClick={() => changeDate(-1)}
           className="p-1 hover:bg-slate-100 text-black border border-black font-pixel text-xs cursor-pointer"
           title="Previous Day"
+          aria-label="Previous Day"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
@@ -140,56 +142,60 @@ export const AttendanceScreen: React.FC = () => {
         </div>
 
         <button
+          type="button"
           onClick={() => changeDate(1)}
           className="p-1 hover:bg-slate-100 text-black border border-black font-pixel text-xs cursor-pointer"
           title="Next Day"
+          aria-label="Next Day"
         >
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Roster Table */}
-      <div className="w-full bg-white border-2 md:border-[3px] border-black shadow-[5px_5px_0px_0px_#000000] p-4 sm:p-6 space-y-3.5">
-        {sortedMembers.map((member) => {
-          const activeStatus = attendanceMap[member.name]?.status;
+      {/* Roster Table with Horizontal Scroll for Full Button Visibility */}
+      <div className="w-full overflow-x-auto pb-2">
+        <div className="min-w-[720px] bg-white border-2 md:border-[3px] border-black shadow-[5px_5px_0px_0px_#000000] p-4 sm:p-6 space-y-4">
+          {sortedMembers.map((member) => {
+            const activeStatus = attendanceMap[member.name]?.status;
 
-          return (
-            <div
-              key={member.name}
-              className="flex flex-col md:flex-row md:items-center justify-between gap-2.5 pb-3 border-b border-slate-200 last:border-b-0 last:pb-0"
-            >
-              {/* Member Name in Pixel Font */}
-              <div className="min-w-[140px]">
-                <span className="font-pixel text-xs sm:text-sm text-black font-bold tracking-wider uppercase">
-                  {member.name}
-                </span>
+            return (
+              <div
+                key={member.name}
+                className="flex items-center justify-between gap-4 pb-3 border-b border-slate-200 last:border-b-0 last:pb-0"
+              >
+                {/* Member Name in Pixel Font */}
+                <div className="min-w-[150px] shrink-0">
+                  <span className="font-pixel text-xs sm:text-sm text-black font-bold tracking-wider uppercase">
+                    {member.name}
+                  </span>
+                </div>
+
+                {/* 5 Attendance Status Options - Full Text without Truncation */}
+                <div className="grid grid-cols-5 gap-2 flex-1">
+                  {ATTENDANCE_STATUSES.map((statusItem) => {
+                    const isSelected = activeStatus === statusItem.id;
+
+                    return (
+                      <button
+                        key={statusItem.id}
+                        type="button"
+                        onClick={() => handleSetStatus(member.name, statusItem.id)}
+                        className={`py-2 px-2 font-pixel text-[9px] sm:text-[10px] font-bold border-2 border-black transition-all cursor-pointer text-center whitespace-nowrap ${
+                          isSelected
+                            ? `${statusItem.activeBg} ${statusItem.activeText} shadow-[2px_2px_0px_0px_#000000]`
+                            : 'bg-black text-white hover:bg-slate-800'
+                        }`}
+                        title={`${statusItem.label} - ${statusItem.description}`}
+                      >
+                        {statusItem.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-
-              {/* 5 Attendance Status Options */}
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 flex-1 max-w-2xl">
-                {ATTENDANCE_STATUSES.map((statusItem) => {
-                  const isSelected = activeStatus === statusItem.id;
-
-                  return (
-                    <button
-                      key={statusItem.id}
-                      type="button"
-                      onClick={() => handleSetStatus(member.name, statusItem.id)}
-                      className={`py-1.5 px-2 font-pixel text-[9px] sm:text-[10px] font-bold border-2 border-black transition-all cursor-pointer text-center truncate ${
-                        isSelected
-                          ? `${statusItem.activeBg} ${statusItem.activeText} shadow-[2px_2px_0px_0px_#000000]`
-                          : 'bg-black text-white hover:bg-slate-800'
-                      }`}
-                      title={`${statusItem.label} - ${statusItem.description}`}
-                    >
-                      {statusItem.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
       {/* Bottom Yellow "ATTENDANCE HISTORY" Button */}
@@ -212,8 +218,10 @@ export const AttendanceScreen: React.FC = () => {
                 ATTENDANCE LOG: {selectedDate}
               </h3>
               <button
+                type="button"
                 onClick={() => setShowHistoryModal(false)}
                 className="w-6 h-6 border-2 border-black bg-slate-100 hover:bg-red-500 hover:text-white font-pixel text-xs flex items-center justify-center cursor-pointer"
+                aria-label="Close modal"
               >
                 ✕
               </button>

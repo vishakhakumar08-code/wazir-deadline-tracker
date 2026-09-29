@@ -1,30 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTaskContext } from '@/context/TaskContext';
-import { VERTICALS, ASSIGNEES, PRIORITIES, STATUSES } from '@/lib/constants';
-import { getDeadlineInfo, toDatetimeLocalString } from '@/lib/deadlineUtils';
-import { Task, TaskStatus, TaskPriority, Vertical, Assignee } from '@/types/task';
-import {
-  X,
-  Clock,
-  CheckCircle2,
-  Calendar,
-  Trash2,
-  Edit3,
-  Flame,
-  AlertTriangle,
-  Layers,
-  CheckSquare,
-  Square,
-  Plus,
-  ExternalLink,
-  Save,
-  UserX,
-  Minus,
-  Users,
-} from 'lucide-react';
-import { MemberAvatar } from './MemberAvatar';
+import { VERTICALS, ASSIGNEES, PRIORITIES } from '@/lib/constants';
+import { Vertical, Assignee, TaskPriority, TaskStatus } from '@/types/task';
+import { toDatetimeLocalString } from '@/lib/deadlineUtils';
+import { Save, Trash2 } from 'lucide-react';
 
 export const TaskDetailModal: React.FC = () => {
   const {
@@ -32,98 +13,99 @@ export const TaskDetailModal: React.FC = () => {
     setSelectedTask,
     updateTask,
     deleteTask,
-    toggleSubtask,
-    moveTaskStatus,
     showToast,
   } = useTaskContext();
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [editTitle, setEditTitle] = useState('');
-  const [editDescription, setEditDescription] = useState('');
-  const [editVertical, setEditVertical] = useState<Vertical>('Editorial');
-  const [editPriority, setEditPriority] = useState<TaskPriority>('Medium');
-  const [editDeadline, setEditDeadline] = useState('');
-  const [editAssignees, setEditAssignees] = useState<Assignee[]>([]);
-  const [newSubtaskInput, setNewSubtaskInput] = useState('');
+  const [title, setTitle] = useState('');
+  const [vertical, setVertical] = useState<Vertical>('Editorial');
+  const [priority, setPriority] = useState<TaskPriority>('Medium');
+  const [status, setStatus] = useState<TaskStatus>('To Do');
+  const [deadline, setDeadline] = useState('');
+  const [isFullTeam, setIsFullTeam] = useState(false);
+  const [selectedAssignees, setSelectedAssignees] = useState<Assignee[]>([]);
+
+  useEffect(() => {
+    if (selectedTask) {
+      setTitle(selectedTask.title || '');
+      setVertical(selectedTask.vertical || 'Editorial');
+      setPriority(selectedTask.priority || 'Medium');
+      setStatus(
+        selectedTask.status === 'Completed'
+          ? 'Completed'
+          : selectedTask.status === 'In Progress' || (selectedTask.status as any) === 'Review'
+          ? 'In Progress'
+          : 'To Do'
+      );
+      try {
+        const d = new Date(selectedTask.deadline);
+        setDeadline(isNaN(d.getTime()) ? toDatetimeLocalString(new Date()) : toDatetimeLocalString(d));
+      } catch (e) {
+        setDeadline(toDatetimeLocalString(new Date()));
+      }
+      const assigneesList = selectedTask.assignees || [];
+      setSelectedAssignees(assigneesList);
+      setIsFullTeam(assigneesList.length === ASSIGNEES.length);
+    }
+  }, [selectedTask]);
 
   if (!selectedTask) return null;
 
-  const verticalConfig = VERTICALS.find((v) => v.id === (isEditing ? editVertical : selectedTask.vertical)) || VERTICALS[0];
-  const priorityConfig = PRIORITIES.find((p) => p.id === (isEditing ? editPriority : selectedTask.priority)) || PRIORITIES[2];
-  const deadlineInfo = getDeadlineInfo(selectedTask.deadline, selectedTask.status);
-
-  const startEditing = () => {
-    setEditTitle(selectedTask.title);
-    setEditDescription(selectedTask.description || '');
-    setEditVertical(selectedTask.vertical);
-    setEditPriority(selectedTask.priority);
-    setEditDeadline(toDatetimeLocalString(new Date(selectedTask.deadline)));
-    setEditAssignees([...selectedTask.assignees]);
-    setIsEditing(true);
+  const handleToggleAssignee = (name: Assignee) => {
+    if (selectedAssignees.includes(name)) {
+      setSelectedAssignees(selectedAssignees.filter((a) => a !== name));
+    } else {
+      setSelectedAssignees([...selectedAssignees, name]);
+    }
   };
 
-  const cancelEditing = () => {
-    setIsEditing(false);
+  const handleRequestExtension = () => {
+    const curr = new Date(deadline);
+    if (!isNaN(curr.getTime())) {
+      curr.setDate(curr.getDate() + 3);
+      setDeadline(toDatetimeLocalString(curr));
+      showToast('Extended target deadline by +3 days!', 'info');
+    }
   };
 
-  const handleSaveEdit = async () => {
-    if (!editTitle.trim()) {
-      showToast('Please provide a deliverable title', 'warning');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) {
+      showToast('Please enter a deliverable title', 'warning');
       return;
     }
 
-    try {
-      const parsedDeadline = editDeadline ? new Date(editDeadline).toISOString() : selectedTask.deadline;
-      await updateTask(selectedTask.id, {
-        title: editTitle.trim(),
-        description: editDescription.trim(),
-        vertical: editVertical,
-        priority: editPriority,
-        deadline: parsedDeadline,
-        assignees: editAssignees,
-      });
-      setIsEditing(false);
-      showToast('Deliverable updated successfully!', 'success');
-    } catch (err: any) {
-      console.error('Error saving edits:', err);
-      showToast(`Failed to update: ${err?.message || 'Error saving'}`, 'error');
+    const finalAssignees: Assignee[] = isFullTeam
+      ? ASSIGNEES.map((a) => a.name)
+      : selectedAssignees;
+
+    await updateTask(selectedTask.id, {
+      title: title.trim(),
+      vertical,
+      priority,
+      status,
+      deadline: new Date(deadline).toISOString(),
+      assignees: finalAssignees,
+    });
+
+    setSelectedTask(null);
+    showToast('Deliverable updated successfully!', 'success');
+  };
+
+  const handleDelete = async () => {
+    if (confirm('Are you sure you want to delete this deliverable?')) {
+      await deleteTask(selectedTask.id);
+      setSelectedTask(null);
     }
   };
 
-  const handleAddSubtask = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newSubtaskInput.trim()) return;
-    const newSt = {
-      id: `sub-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
-      title: newSubtaskInput.trim(),
-      completed: false,
-    };
-    await updateTask(selectedTask.id, {
-      subtasks: [...selectedTask.subtasks, newSt],
-    });
-    setNewSubtaskInput('');
-  };
-
-  const handleDeleteSubtask = async (subtaskId: string) => {
-    await updateTask(selectedTask.id, {
-      subtasks: selectedTask.subtasks.filter((st) => st.id !== subtaskId),
-    });
-  };
-
-  const toggleAssignee = (name: Assignee) => {
-    setEditAssignees((prev) =>
-      prev.includes(name) ? prev.filter((a) => a !== name) : [...prev, name]
-    );
-  };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-white border-2 md:border-[3px] border-black shadow-[6px_6px_0px_0px_#000000] overflow-hidden max-h-[90vh] my-4 flex flex-col">
-        {/* Retro Window Top Bar */}
-        <div className="bg-[#CBD5E1] border-b-2 border-black px-4 py-2 flex items-center justify-between font-pixel text-xs text-black font-bold shrink-0">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+      <div className="relative w-full max-w-lg bg-[#60A5FA] border-2 md:border-[3px] border-black shadow-[6px_6px_0px_0px_#000000] overflow-hidden">
+        {/* Retro Window Top Bar (Grey with Black Border) */}
+        <div className="bg-[#CBD5E1] border-b-2 border-black px-4 py-2 flex items-center justify-between font-pixel text-xs text-black font-bold">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 bg-black inline-block" />
-            <span className="tracking-wider">DELIVERABLE DETAILS</span>
+            <span className="tracking-wider">EDIT DELIVERABLE</span>
           </div>
 
           <button
@@ -136,486 +118,172 @@ export const TaskDetailModal: React.FC = () => {
           </button>
         </div>
 
-        {/* Action Header Strip */}
-        <div className="px-5 py-3 border-b-2 border-black bg-slate-100 flex items-center justify-between gap-3 shrink-0">
-          <div className="flex items-center gap-2">
-            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${verticalConfig.badge}`}>
-              {isEditing ? editVertical : selectedTask.vertical}
-            </span>
-            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${priorityConfig.badge}`}>
-              {isEditing ? editPriority : selectedTask.priority}
-            </span>
-            {isEditing && (
-              <span className="font-pixel text-[10px] font-bold text-blue-800 bg-blue-100 px-2 py-0.5 border border-blue-400">
-                EDITING
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            {!isEditing ? (
-              <button
-                onClick={startEditing}
-                className="px-3 py-1 bg-black text-white hover:bg-slate-800 border-2 border-black font-pixel text-xs flex items-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000]"
-                title="Edit deliverable"
-              >
-                <Edit3 className="w-3.5 h-3.5" />
-                <span>EDIT</span>
-              </button>
-            ) : (
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={cancelEditing}
-                  className="px-2.5 py-1 bg-white hover:bg-slate-100 text-black font-pixel text-xs border-2 border-black cursor-pointer"
-                >
-                  CANCEL
-                </button>
-                <button
-                  onClick={handleSaveEdit}
-                  className="px-3 py-1 bg-[#4ADE80] text-black font-pixel font-bold text-xs border-2 border-black flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer"
-                >
-                  <Save className="w-3.5 h-3.5" />
-                  <span>SAVE</span>
-                </button>
-              </div>
-            )}
-
-            {!isEditing && (
-              <button
-                onClick={() => {
-                  if (confirm('Are you sure you want to delete this deliverable?')) {
-                    deleteTask(selectedTask.id);
-                  }
-                }}
-                className="p-1 bg-white hover:bg-red-500 hover:text-white text-black border-2 border-black transition-colors cursor-pointer shadow-[2px_2px_0px_0px_#000]"
-                title="Delete deliverable"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Modal Content */}
-        <div className="p-5 sm:p-6 space-y-5 overflow-y-auto scrollbar-thin">
-          {/* Main Title */}
+        {/* Modal Interior (Solid Blue) */}
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4">
+          {/* Deliverable Title */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-              Deliverable Title {isEditing && '*'}
+            <label className="block font-pixel text-[11px] text-black uppercase mb-1 font-bold">
+              Deliverable Title
             </label>
-            {!isEditing ? (
-              <h2 className="text-lg sm:text-xl font-bold text-slate-900 font-heading leading-snug">
-                {selectedTask.title}
-              </h2>
-            ) : (
-              <input
-                type="text"
-                value={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
-                placeholder="Deliverable title"
-                className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-base font-bold text-slate-900 focus:outline-none focus:border-blue-600 font-heading min-h-[44px]"
-              />
-            )}
+            <input
+              type="text"
+              required
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="deliverable title..."
+              className="w-full bg-white border-2 border-black p-2.5 font-serif text-slate-900 placeholder:text-slate-400 focus:outline-none text-base shadow-[2px_2px_0px_0px_#000000]"
+            />
           </div>
 
-          {/* Edit Mode: Vertical & Priority Selector Row */}
-          {isEditing && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200">
-              {/* Vertical Selector */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-blue-600" />
-                  Club Vertical *
-                </label>
-                <select
-                  value={editVertical}
-                  onChange={(e) => setEditVertical(e.target.value as Vertical)}
-                  className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-blue-600 font-medium cursor-pointer min-h-[44px]"
-                >
-                  {VERTICALS.map((v) => (
-                    <option key={v.id} value={v.id}>
-                      {v.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Priority Selector */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                  Priority Level *
-                </label>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {PRIORITIES.map((p) => {
-                    const isSelected = editPriority === p.id;
-                    return (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => setEditPriority(p.id)}
-                        className={`py-2 px-1 rounded-xl text-xs font-semibold transition-all flex flex-col items-center justify-center gap-1 min-h-[44px] cursor-pointer ${
-                          isSelected
-                            ? `${p.badge} ring-2 ring-blue-500 font-bold shadow-sm`
-                            : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
-                        }`}
-                      >
-                        {p.id === 'Urgent' && <Flame className="w-3.5 h-3.5 text-red-500" />}
-                        {p.id === 'High' && <AlertTriangle className="w-3.5 h-3.5 text-orange-500" />}
-                        {p.id === 'Medium' && <Clock className="w-3.5 h-3.5 text-amber-500" />}
-                        {p.id === 'Low' && <Minus className="w-3.5 h-3.5 text-slate-400" />}
-                        <span>{p.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Deadline Section: View Mode vs Edit Mode Date Picker */}
-          <div>
-            {!isEditing ? (
-              /* Deadline Countdown Banner */
-              <div className="flex flex-wrap items-center justify-between gap-2 p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-                <div className="flex items-center gap-2.5">
-                  <Calendar className="w-4 h-4 text-blue-600 shrink-0" />
-                  <div>
-                    <p className="text-[11px] text-slate-500">Target Deadline</p>
-                    <p className="text-xs sm:text-sm font-semibold text-slate-900">
-                      {deadlineInfo.formattedDate}
-                    </p>
-                  </div>
-                </div>
-
-                <div
-                  className={`flex items-center gap-1.5 text-xs px-3 py-1 rounded-full border font-semibold ${deadlineInfo.badgeClass}`}
-                >
-                  <span className={`w-2 h-2 rounded-full ${deadlineInfo.dotClass}`} />
-                  <span>{deadlineInfo.timeRemainingText}</span>
-                </div>
-              </div>
-            ) : (
-              /* Editable Deadline Date & Time Picker */
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2">
-                <div className="flex flex-wrap items-center justify-between gap-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-blue-600" />
-                    Modify Deadline Date &amp; Time *
-                  </label>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] text-slate-400">Quick:</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const d = new Date(Date.now() + 6 * 60 * 60 * 1000);
-                        setEditDeadline(toDatetimeLocalString(d));
-                      }}
-                      className="text-[11px] px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 cursor-pointer min-h-[30px]"
-                    >
-                      +6h
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const d = new Date(Date.now() + 24 * 60 * 60 * 1000);
-                        setEditDeadline(toDatetimeLocalString(d));
-                      }}
-                      className="text-[11px] px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 text-blue-700 border border-slate-200 cursor-pointer min-h-[30px]"
-                    >
-                      +24h
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const d = new Date(Date.now() + 72 * 60 * 60 * 1000);
-                        setEditDeadline(toDatetimeLocalString(d));
-                      }}
-                      className="text-[11px] px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 text-emerald-700 border border-slate-200 cursor-pointer min-h-[30px]"
-                    >
-                      +3d
-                    </button>
-                  </div>
-                </div>
-                <div className="relative">
-                  <Calendar className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                  <input
-                    type="datetime-local"
-                    required
-                    value={editDeadline}
-                    onChange={(e) => setEditDeadline(e.target.value)}
-                    className="w-full bg-white border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-blue-600 font-medium min-h-[44px]"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Workflow Status Advance Bar (Only in View Mode) */}
-          {!isEditing && (
+          {/* Vertical & Priority Side-by-Side */}
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-                Deliverable Workflow Stage
+              <label className="block font-pixel text-[10px] text-black uppercase mb-1 font-bold">
+                Vertical
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {STATUSES.map((st) => {
-                  const isActive = selectedTask.status === st.id;
+              <select
+                value={vertical}
+                onChange={(e) => setVertical(e.target.value as Vertical)}
+                className="w-full bg-white border-2 border-black p-2 font-serif text-sm text-slate-900 focus:outline-none shadow-[2px_2px_0px_0px_#000000] cursor-pointer"
+              >
+                {VERTICALS.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block font-pixel text-[10px] text-black uppercase mb-1 font-bold">
+                Priority
+              </label>
+              <select
+                value={priority}
+                onChange={(e) => setPriority(e.target.value as TaskPriority)}
+                className="w-full bg-white border-2 border-black p-2 font-serif text-sm text-slate-900 focus:outline-none shadow-[2px_2px_0px_0px_#000000] cursor-pointer"
+              >
+                {PRIORITIES.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Target Deadline */}
+          <div>
+            <label className="block font-pixel text-[10px] text-black uppercase mb-1 font-bold">
+              Target Deadline
+            </label>
+            <input
+              type="datetime-local"
+              required
+              value={deadline}
+              onChange={(e) => setDeadline(e.target.value)}
+              className="w-full bg-white border-2 border-black p-2 font-serif text-sm text-slate-900 focus:outline-none shadow-[2px_2px_0px_0px_#000000] cursor-pointer"
+            />
+          </div>
+
+          {/* Team Member Assignment with "full team" Checkbox */}
+          <div className="bg-white/90 border-2 border-black p-3 space-y-2.5 shadow-[2px_2px_0px_0px_#000000]">
+            <div className="flex items-center justify-between">
+              <span className="font-pixel text-[10px] text-black uppercase font-bold">
+                Team Member Assignment
+              </span>
+
+              {/* Full Team Checkbox */}
+              <label className="flex items-center gap-1.5 font-pixel text-[10px] text-black cursor-pointer bg-amber-200 border border-black px-2 py-0.5 shadow-[1px_1px_0px_0px_#000000]">
+                <input
+                  type="checkbox"
+                  checked={isFullTeam}
+                  onChange={(e) => {
+                    setIsFullTeam(e.target.checked);
+                    if (e.target.checked) {
+                      setSelectedAssignees(ASSIGNEES.map((a) => a.name));
+                    }
+                  }}
+                  className="w-3.5 h-3.5 accent-black cursor-pointer"
+                />
+                <span>full team</span>
+              </label>
+            </div>
+
+            {isFullTeam ? (
+              <p className="font-serif italic text-xs text-slate-600 bg-slate-100 p-2 border border-slate-300">
+                ✓ All 10 junior members assigned to this deliverable.
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 max-h-32 overflow-y-auto p-1">
+                {ASSIGNEES.map((assignee) => {
+                  const isSelected = selectedAssignees.includes(assignee.name);
                   return (
                     <button
-                      key={st.id}
-                      onClick={() => moveTaskStatus(selectedTask.id, st.id)}
-                      className={`py-2.5 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 border min-h-[44px] cursor-pointer ${
-                        isActive
-                          ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                          : 'bg-slate-50 text-slate-600 hover:text-slate-900 border-slate-200 hover:bg-slate-100'
+                      key={assignee.name}
+                      type="button"
+                      onClick={() => handleToggleAssignee(assignee.name)}
+                      className={`p-1 text-center font-serif text-xs border transition-colors cursor-pointer truncate ${
+                        isSelected
+                          ? 'bg-black text-white border-black font-bold'
+                          : 'bg-white text-slate-800 border-slate-300 hover:bg-slate-100'
                       }`}
                     >
-                      <span
-                        className={`w-2 h-2 rounded-full ${
-                          isActive ? 'bg-white' : st.dotColor
-                        }`}
-                      />
-                      <span>{st.label}</span>
+                      {assignee.name}
                     </button>
                   );
                 })}
               </div>
-            </div>
-          )}
-
-          {/* Description */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-              Description / Context
-            </label>
-            {!isEditing ? (
-              <p className="text-sm text-slate-700 bg-slate-50 p-3.5 rounded-xl border border-slate-200 leading-relaxed">
-                {selectedTask.description || 'No detailed notes provided for this deliverable.'}
-              </p>
-            ) : (
-              <textarea
-                rows={3}
-                value={editDescription}
-                onChange={(e) => setEditDescription(e.target.value)}
-                placeholder="Add context, objectives, or instructions..."
-                className="w-full bg-white border border-slate-300 rounded-xl p-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 resize-none font-normal"
-              ></textarea>
             )}
           </div>
 
-          {/* Assignees Section */}
+          {/* Work Stage Dropdown (Strictly 3 Options: To Do, In Progress, Complete) */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-              Assigned Team Members ({(isEditing ? editAssignees : selectedTask.assignees).length})
+            <label className="block font-pixel text-[10px] text-black uppercase mb-1 font-bold">
+              Work Stage
             </label>
-            {!isEditing ? (
-              selectedTask.assignees && selectedTask.assignees.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {selectedTask.assignees.map((assigneeName) => {
-                    const assignee = ASSIGNEES.find((a) => a.name === assigneeName);
-                    return (
-                      <div
-                        key={assigneeName}
-                        className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200"
-                      >
-                        <MemberAvatar name={assigneeName} size="xs" />
-                        <div>
-                          <p className="text-xs font-bold text-slate-900">{assigneeName}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-dashed border-slate-300">
-                  <div className="flex items-center gap-2 text-xs text-slate-500">
-                    <UserX className="w-4 h-4 text-amber-500" />
-                    <span>Currently Unassigned</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={startEditing}
-                    className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-                  >
-                    + Assign Team Member
-                  </button>
-                </div>
-              )
-            ) : (
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between pb-1">
-                  <span className="text-[11px] text-slate-500">
-                    {editAssignees.length === 0
-                      ? 'Currently unassigned'
-                      : `${editAssignees.length}/${ASSIGNEES.length} members selected`}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (editAssignees.length === ASSIGNEES.length) {
-                          setEditAssignees([]);
-                        } else {
-                          setEditAssignees(ASSIGNEES.map((a) => a.name));
-                        }
-                      }}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer min-h-[34px] ${
-                        editAssignees.length === ASSIGNEES.length
-                          ? 'bg-blue-600 text-white border-blue-600'
-                          : 'bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200'
-                      }`}
-                    >
-                      {editAssignees.length === ASSIGNEES.length
-                        ? '✓ Entire Team (Deselect)'
-                        : '⚡ Select All / Entire Team'}
-                    </button>
-                    {editAssignees.length > 0 && editAssignees.length < ASSIGNEES.length && (
-                      <button
-                        type="button"
-                        onClick={() => setEditAssignees([])}
-                        className="text-xs text-slate-500 hover:text-red-600 transition-colors"
-                      >
-                        Clear
-                      </button>
-                    )}
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                  {ASSIGNEES.map((assignee) => {
-                    const isSelected = editAssignees.includes(assignee.name);
-                    return (
-                      <button
-                        key={assignee.name}
-                        type="button"
-                        onClick={() => toggleAssignee(assignee.name)}
-                        className={`p-2.5 sm:p-2 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all min-h-[44px] cursor-pointer ${
-                          isSelected
-                            ? 'bg-blue-50 border-blue-300 text-blue-800 ring-1 ring-blue-400/40 shadow-sm'
-                            : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                        }`}
-                      >
-                        <MemberAvatar name={assignee.name} size="xs" />
-                        <span className="truncate">{assignee.name}</span>
-                        {isSelected && <span className="text-[10px] text-blue-600 font-bold ml-auto">✓</span>}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as TaskStatus)}
+              className="w-full bg-white border-2 border-black p-2 font-serif text-sm text-slate-900 focus:outline-none shadow-[2px_2px_0px_0px_#000000] cursor-pointer"
+            >
+              <option value="To Do">To Do</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Complete</option>
+            </select>
           </div>
 
-          {/* Interactive Checklist / Subtasks */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center justify-between">
-              <span className="flex items-center gap-1.5">
-                <CheckSquare className="w-4 h-4 text-blue-600" />
-                Checklist Deliverables
-              </span>
-              <span className="text-slate-500 text-xs">
-                {selectedTask.subtasks.filter((s) => s.completed).length} / {selectedTask.subtasks.length} Done
-              </span>
-            </label>
+          {/* Action Buttons: Yellow "request extension", Delete, and Green "SAVE" */}
+          <div className="flex items-center justify-between pt-2">
+            <button
+              type="button"
+              onClick={handleRequestExtension}
+              className="bg-[#FACC15] text-black border-2 border-black font-pixel text-[11px] py-2 px-3.5 shadow-[3px_3px_0px_0px_#000000] hover:bg-[#EAB308] active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer font-bold"
+            >
+              request extension
+            </button>
 
-            <div className="space-y-2 mb-3">
-              {selectedTask.subtasks.map((st) => (
-                <div
-                  key={st.id}
-                  onClick={() => toggleSubtask(selectedTask.id, st.id)}
-                  className={`group flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer min-h-[44px] ${
-                    st.completed
-                      ? 'bg-slate-50 border-slate-200 text-slate-400 line-through'
-                      : 'bg-white border-slate-200 text-slate-800 hover:border-slate-300 shadow-sm'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className={st.completed ? 'text-emerald-600' : 'text-slate-400'}>
-                      {st.completed ? (
-                        <CheckCircle2 className="w-4 h-4" />
-                      ) : (
-                        <Square className="w-4 h-4" />
-                      )}
-                    </div>
-                    <span className="text-xs sm:text-sm truncate font-medium">
-                      {st.title}
-                    </span>
-                  </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="p-2 bg-white hover:bg-red-500 hover:text-white text-black border-2 border-black shadow-[3px_3px_0px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5 transition-colors cursor-pointer"
+                title="Delete deliverable"
+                aria-label="Delete deliverable"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteSubtask(st.id);
-                    }}
-                    className="p-1.5 text-slate-400 hover:text-red-600 transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            {/* Add Subtask Input */}
-            <form onSubmit={handleAddSubtask} className="flex gap-2">
-              <input
-                type="text"
-                value={newSubtaskInput}
-                onChange={(e) => setNewSubtaskInput(e.target.value)}
-                placeholder="Add next action item or checkpoint..."
-                className="flex-1 bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 min-h-[44px]"
-              />
               <button
                 type="submit"
-                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-200 flex items-center gap-1 cursor-pointer min-h-[44px]"
+                className="bg-[#4ADE80] text-black border-2 border-black font-pixel text-xs py-2 px-5 shadow-[3px_3px_0px_0px_#000000] hover:bg-[#22C55E] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer font-bold"
               >
-                <Plus className="w-3.5 h-3.5" />
-                Add
+                <Save className="w-3.5 h-3.5 stroke-[2.5]" />
+                <span>SAVE</span>
               </button>
-            </form>
+            </div>
           </div>
-
-          {/* Resources / Links */}
-          {selectedTask.resources && selectedTask.resources.length > 0 && (
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-                External Artifacts &amp; Links
-              </label>
-              <div className="space-y-1.5">
-                {selectedTask.resources.map((url, idx) => (
-                  <a
-                    key={idx}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs text-blue-600 hover:underline transition-colors min-h-[44px]"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                    <span className="truncate">{url}</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Edit Mode Bottom Action Bar */}
-          {isEditing && (
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={cancelEditing}
-                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer min-h-[44px]"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleSaveEdit}
-                className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-sm cursor-pointer min-h-[44px]"
-              >
-                <Save className="w-4 h-4" />
-                <span>Save All Changes</span>
-              </button>
-            </div>
-          )}
-        </div>
+        </form>
       </div>
     </div>
   );

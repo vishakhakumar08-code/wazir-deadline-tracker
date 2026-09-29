@@ -183,7 +183,12 @@ export const RetroNewDeliverableModal: React.FC = () => {
                 <input
                   type="checkbox"
                   checked={isFullTeam}
-                  onChange={(e) => setIsFullTeam(e.target.checked)}
+                  onChange={(e) => {
+                    setIsFullTeam(e.target.checked);
+                    if (e.target.checked) {
+                      setSelectedAssignees(ASSIGNEES.map((a) => a.name));
+                    }
+                  }}
                   className="w-3.5 h-3.5 accent-black cursor-pointer"
                 />
                 <span>full team</span>

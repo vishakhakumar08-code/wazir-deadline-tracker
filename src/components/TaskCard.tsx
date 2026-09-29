@@ -22,9 +22,17 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onDragStart }) => {
     setSelectedTask(task);
   };
 
-  // Build subtext: "Assignee · Vertical · Deadline"
-  const assigneeText = task.assignees && task.assignees.length > 0 ? task.assignees.join(', ') : 'Unassigned';
-  const verticalShort = task.vertical === 'External Relations' ? 'ER' : task.vertical === 'Public Relations' ? 'PR' : task.vertical;
+  // Build subtext: "Assignees initials · Vertical · Deadline"
+  const assigneeText =
+    task.assignees && task.assignees.length > 0
+      ? task.assignees.map((a) => a.slice(0, 2).toUpperCase()).join(', ')
+      : 'Unassigned';
+  const verticalShort =
+    task.vertical === 'External Relations'
+      ? 'ER'
+      : task.vertical === 'Public Relations'
+      ? 'PR'
+      : task.vertical;
   const deadlineText = deadlineInfo.timeRemainingText;
 
   const isOverdue = deadlineInfo.isOverdue && task.status !== 'Completed';

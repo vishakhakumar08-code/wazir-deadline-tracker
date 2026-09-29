@@ -25,9 +25,9 @@ export const VERTICALS: {
     label: 'Public Relations',
     tag: 'pr',
     color: '#f59e0b',
-    pillBg: 'bg-[#FEF3C7]',
-    pillText: 'text-[#B45309]',
-    badge: 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]',
+    pillBg: 'bg-[#FED7AA]',
+    pillText: 'text-[#9A3412]',
+    badge: 'bg-[#FED7AA] text-[#9A3412] border border-[#FDBA74]',
     description: 'Social media, branding, LinkedIn campaigns & press',
   },
   {

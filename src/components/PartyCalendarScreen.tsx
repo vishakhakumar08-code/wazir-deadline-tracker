@@ -75,7 +75,7 @@ export const PartyCalendarScreen: React.FC = () => {
         <h1 className="font-pixel text-xl sm:text-3xl text-black tracking-widest font-bold">
           MEMORIES LOADING...
         </h1>
-        <p className="font-serif italic text-base sm:text-lg text-slate-700">
+        <p className="font-serif not-italic font-normal text-black text-base sm:text-lg">
           a look back
         </p>
       </div>

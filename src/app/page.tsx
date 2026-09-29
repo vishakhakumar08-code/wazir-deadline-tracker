@@ -52,7 +52,7 @@ export default function Home() {
             <h1 className="font-pixel text-2xl sm:text-4xl md:text-5xl text-black font-bold tracking-widest uppercase">
               WAZIR
             </h1>
-            <p className="font-serif italic text-base sm:text-xl text-slate-800 -mt-0.5 sm:mt-0">
+            <p className="font-serif not-italic font-normal text-black text-base sm:text-xl -mt-0.5 sm:mt-0">
               keeping track
             </p>
           </div>

@@ -163,9 +163,17 @@ export const RetroKanbanBoard: React.FC<{ memberFilter?: string }> = ({ memberFi
                             {getVerticalBadge(task.vertical)}
 
                             {task.assignees && task.assignees.length > 0 && (
-                              <span className="text-[10px] font-sans text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
-                                {task.assignees.join(', ')}
-                              </span>
+                              <div className="flex flex-wrap items-center gap-1">
+                                {task.assignees.map((assigneeName) => (
+                                  <span
+                                    key={assigneeName}
+                                    title={assigneeName}
+                                    className="text-[10px] font-sans font-bold text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-300 shadow-[1px_1px_0px_0px_rgba(0,0,0,0.06)]"
+                                  >
+                                    {assigneeName.slice(0, 2).toUpperCase()}
+                                  </span>
+                                ))}
+                              </div>
                             )}
                           </div>
                         </div>
