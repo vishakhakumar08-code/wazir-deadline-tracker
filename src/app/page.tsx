@@ -48,7 +48,7 @@ export default function Home() {
 
         {/* Home Screen Title & Subtitle (Centered) */}
         {currentScreen === 'home' && (
-          <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none sm:pointer-events-auto">
+          <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none sm:pointer-events-auto pt-2 sm:pt-3 mt-1 sm:mt-1.5">
             <h1 className="font-pixel text-2xl sm:text-4xl md:text-5xl text-black font-bold tracking-widest uppercase">
               WAZIR
             </h1>

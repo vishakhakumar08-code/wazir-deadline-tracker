@@ -67,11 +67,11 @@ export const IndividualTrackerSearch: React.FC = () => {
       </form>
 
       {/* Sub-Navigation Buttons (Solid Black with White Pixel Text) */}
-      <div className="flex flex-row flex-nowrap items-center justify-center gap-3 sm:gap-4 w-full overflow-x-auto pt-6">
+      <div className="flex flex-row items-center justify-center gap-2 sm:gap-3 w-full max-w-2xl mx-auto px-2 overflow-visible pt-6">
         <button
           type="button"
           onClick={() => setCurrentScreen('attendance')}
-          className="bg-black text-white font-pixel text-[10px] sm:text-xs px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-black shadow-[3px_3px_0px_0px_#000000] hover:bg-slate-800 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer tracking-wider whitespace-nowrap font-bold"
+          className="bg-black text-white font-pixel text-[9px] sm:text-xs px-2.5 sm:px-4 py-2 sm:py-2.5 border-2 border-black shadow-[3px_3px_0px_0px_#000000] hover:bg-slate-800 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer tracking-wider whitespace-nowrap font-bold"
         >
           ATTENDANCE TRACKER
         </button>
@@ -79,7 +79,7 @@ export const IndividualTrackerSearch: React.FC = () => {
         <button
           type="button"
           onClick={() => setCurrentScreen('home')}
-          className="bg-black text-white font-pixel text-[10px] sm:text-xs px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-black shadow-[3px_3px_0px_0px_#000000] hover:bg-slate-800 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer tracking-wider whitespace-nowrap font-bold"
+          className="bg-black text-white font-pixel text-[9px] sm:text-xs px-2.5 sm:px-4 py-2 sm:py-2.5 border-2 border-black shadow-[3px_3px_0px_0px_#000000] hover:bg-slate-800 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer tracking-wider whitespace-nowrap font-bold"
         >
           DEADLINE TRACKER
         </button>
@@ -87,7 +87,7 @@ export const IndividualTrackerSearch: React.FC = () => {
         <button
           type="button"
           onClick={() => setCurrentScreen('party_calendar')}
-          className="bg-black text-white font-pixel text-[10px] sm:text-xs px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-black shadow-[3px_3px_0px_0px_#000000] hover:bg-slate-800 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer tracking-wider whitespace-nowrap font-bold"
+          className="bg-black text-white font-pixel text-[9px] sm:text-xs px-2.5 sm:px-4 py-2 sm:py-2.5 border-2 border-black shadow-[3px_3px_0px_0px_#000000] hover:bg-slate-800 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer tracking-wider whitespace-nowrap font-bold"
         >
           PARTY CALENDAR
         </button>

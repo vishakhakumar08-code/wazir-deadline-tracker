@@ -1,15 +1,30 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTaskContext } from '@/context/TaskContext';
 import { ASSIGNEES, ATTENDANCE_STATUSES } from '@/lib/constants';
 import { Assignee, AttendanceStatus, AttendanceRecord } from '@/types/task';
 import {
   fetchAttendanceForDate,
+  fetchAllAttendanceRecords,
   upsertAttendanceRecord,
   subscribeToAttendanceChanges,
 } from '@/lib/supabase';
 import { ChevronLeft, ChevronRight, Calendar, History, X } from 'lucide-react';
+
+interface MemberCumulativeAttendance {
+  total: number;
+  present: number;
+  excusedTardy: number;
+  tardy: number;
+  excusedAbsence: number;
+  absence: number;
+  presentPct: number;
+  excusedTardyPct: number;
+  tardyPct: number;
+  excusedAbsencePct: number;
+  absencePct: number;
+}
 
 export const AttendanceScreen: React.FC = () => {
   const { showToast, isSupabaseConfigured } = useTaskContext();
@@ -20,9 +35,11 @@ export const AttendanceScreen: React.FC = () => {
 
   const [attendanceMap, setAttendanceMap] = useState<Record<string, AttendanceRecord>>({});
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [allHistoryRecords, setAllHistoryRecords] = useState<AttendanceRecord[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
   // Alphabetically sorted roster of members (as shown in reference design)
-  const sortedMembers = React.useMemo(() => {
+  const sortedMembers = useMemo(() => {
     return [...ASSIGNEES].sort((a, b) => a.name.localeCompare(b.name));
   }, []);
 
@@ -54,20 +71,62 @@ export const AttendanceScreen: React.FC = () => {
     setAttendanceMap({});
   }, [isSupabaseConfigured]);
 
+  // Fetch All Attendance for Cumulative History
+  const loadAllHistory = useCallback(async () => {
+    setIsLoadingHistory(true);
+    if (isSupabaseConfigured) {
+      const { data } = await fetchAllAttendanceRecords();
+      if (data && Array.isArray(data)) {
+        setAllHistoryRecords(data);
+        setIsLoadingHistory(false);
+        return;
+      }
+    }
+
+    // Local fallback: collect from all local storage keys starting with wazir_attendance_
+    if (typeof window !== 'undefined') {
+      const records: AttendanceRecord[] = [];
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith('wazir_attendance_')) {
+            const parsed = JSON.parse(localStorage.getItem(key) || '{}');
+            Object.values(parsed).forEach((rec: any) => {
+              if (rec && rec.member_name && rec.status) {
+                records.push(rec);
+              }
+            });
+          }
+        }
+      } catch (e) {}
+      setAllHistoryRecords(records);
+    }
+    setIsLoadingHistory(false);
+  }, [isSupabaseConfigured]);
+
   useEffect(() => {
     loadAttendance(selectedDate);
   }, [selectedDate, loadAttendance]);
+
+  useEffect(() => {
+    if (showHistoryModal) {
+      loadAllHistory();
+    }
+  }, [showHistoryModal, loadAllHistory]);
 
   // Realtime attendance listener
   useEffect(() => {
     if (!isSupabaseConfigured) return;
     const channel = subscribeToAttendanceChanges(() => {
       loadAttendance(selectedDate);
+      if (showHistoryModal) {
+        loadAllHistory();
+      }
     });
     return () => {
       if (channel) channel.unsubscribe();
     };
-  }, [isSupabaseConfigured, selectedDate, loadAttendance]);
+  }, [isSupabaseConfigured, selectedDate, loadAttendance, loadAllHistory, showHistoryModal]);
 
   const handleSetStatus = async (memberName: Assignee, newStatus: AttendanceStatus) => {
     const existing = attendanceMap[memberName];
@@ -109,6 +168,83 @@ export const AttendanceScreen: React.FC = () => {
     d.setDate(d.getDate() + days);
     setSelectedDate(d.toISOString().split('T')[0]);
   };
+
+  // Cumulative breakdown for all 10 members
+  const memberCumulativeStats = useMemo(() => {
+    const map: Record<string, MemberCumulativeAttendance> = {};
+
+    sortedMembers.forEach((m) => {
+      const memberRecords = allHistoryRecords.filter(
+        (r) => r.member_name.toLowerCase() === m.name.toLowerCase()
+      );
+
+      let present = 0;
+      let excusedTardy = 0;
+      let tardy = 0;
+      let excusedAbsence = 0;
+      let absence = 0;
+
+      memberRecords.forEach((r) => {
+        switch (r.status) {
+          case 'Present':
+            present++;
+            break;
+          case 'Excused Tardy':
+            excusedTardy++;
+            break;
+          case 'Tardy':
+            tardy++;
+            break;
+          case 'Excused Absence':
+            excusedAbsence++;
+            break;
+          case 'Absent':
+            absence++;
+            break;
+        }
+      });
+
+      const total = present + excusedTardy + tardy + excusedAbsence + absence;
+
+      if (total > 0) {
+        const presentPct = Math.round((present / total) * 100);
+        const excusedTardyPct = Math.round((excusedTardy / total) * 100);
+        const tardyPct = Math.round((tardy / total) * 100);
+        const excusedAbsencePct = Math.round((excusedAbsence / total) * 100);
+        const absencePct = Math.max(0, 100 - (presentPct + excusedTardyPct + tardyPct + excusedAbsencePct));
+
+        map[m.name] = {
+          total,
+          present,
+          excusedTardy,
+          tardy,
+          excusedAbsence,
+          absence,
+          presentPct,
+          excusedTardyPct,
+          tardyPct,
+          excusedAbsencePct,
+          absencePct,
+        };
+      } else {
+        map[m.name] = {
+          total: 0,
+          present: 0,
+          excusedTardy: 0,
+          tardy: 0,
+          excusedAbsence: 0,
+          absence: 0,
+          presentPct: 0,
+          excusedTardyPct: 0,
+          tardyPct: 0,
+          excusedAbsencePct: 0,
+          absencePct: 0,
+        };
+      }
+    });
+
+    return map;
+  }, [sortedMembers, allHistoryRecords]);
 
   return (
     <div className="w-full max-w-5xl lg:max-w-6xl mx-auto flex flex-col items-center space-y-6 pb-12">
@@ -209,39 +345,144 @@ export const AttendanceScreen: React.FC = () => {
         </button>
       </div>
 
-      {/* Attendance History Summary Modal */}
+      {/* Redesigned All-Member Attendance History Summary Modal */}
       {showHistoryModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-          <div className="relative w-full max-w-lg bg-white border-2 border-black shadow-[6px_6px_0px_0px_#000000] p-6 space-y-4 max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b-2 border-black pb-2">
-              <h3 className="font-pixel text-sm font-bold text-black">
-                ATTENDANCE LOG: {selectedDate}
-              </h3>
+          <div className="relative w-full max-w-3xl bg-white border-2 md:border-[3px] border-black shadow-[6px_6px_0px_0px_#000000] overflow-hidden max-h-[90vh] flex flex-col">
+            {/* Top Bar */}
+            <div className="bg-[#CBD5E1] border-b-2 border-black px-4 py-2 flex items-center justify-between font-pixel text-xs text-black font-bold shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 bg-black inline-block" />
+                <span className="tracking-wider">ATTENDANCE HISTORY: ALL MEMBERS</span>
+              </div>
               <button
                 type="button"
                 onClick={() => setShowHistoryModal(false)}
-                className="w-6 h-6 border-2 border-black bg-slate-100 hover:bg-red-500 hover:text-white font-pixel text-xs flex items-center justify-center cursor-pointer"
+                className="w-6 h-6 border-2 border-black bg-white hover:bg-red-500 hover:text-white font-pixel text-xs flex items-center justify-center cursor-pointer transition-colors"
                 aria-label="Close modal"
               >
                 ✕
               </button>
             </div>
 
-            <div className="space-y-2">
-              {sortedMembers.map((m) => {
-                const rec = attendanceMap[m.name];
-                return (
-                  <div
-                    key={m.name}
-                    className="flex items-center justify-between p-2 border border-slate-300 font-serif text-sm"
-                  >
-                    <span className="font-bold">{m.name}</span>
-                    <span className="font-pixel text-[10px] px-2 py-0.5 border border-black bg-slate-100">
-                      {rec?.status || 'UNMARKED'}
-                    </span>
-                  </div>
-                );
-              })}
+            {/* Modal Body */}
+            <div className="p-5 sm:p-6 space-y-4 overflow-y-auto">
+              {/* Legend Strip */}
+              <div className="flex flex-wrap items-center justify-between gap-3 text-[10px] font-pixel p-3 bg-slate-50 border border-black shadow-[2px_2px_0px_0px_#000]">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 bg-[#16A34A] border border-black inline-block" />
+                  <span>Present</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 bg-[#86EFAC] border border-black inline-block" />
+                  <span>Excused Tardy</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 bg-[#FACC15] border border-black inline-block" />
+                  <span>Tardy</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 bg-[#FB923C] border border-black inline-block" />
+                  <span>Excused Absence</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 bg-[#DC2626] border border-black inline-block" />
+                  <span>Absence</span>
+                </div>
+              </div>
+
+              {/* Members Segmented Bars List */}
+              <div className="space-y-3 pt-1">
+                {sortedMembers.map((member) => {
+                  const stats = memberCumulativeStats[member.name];
+
+                  return (
+                    <div
+                      key={member.name}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 border border-slate-200 bg-white hover:bg-slate-50 transition-colors"
+                    >
+                      {/* Member Name */}
+                      <div className="w-32 shrink-0">
+                        <span className="font-pixel text-xs text-black font-bold uppercase tracking-wider">
+                          {member.name}
+                        </span>
+                      </div>
+
+                      {/* Segmented Horizontal Bar or Empty Placeholder */}
+                      <div className="flex-1 min-w-0">
+                        {stats && stats.total > 0 ? (
+                          <div className="w-full h-7 flex border-2 border-black shadow-[2px_2px_0px_0px_#000000] overflow-hidden">
+                            {stats.presentPct > 0 && (
+                              <div
+                                style={{ width: `${stats.presentPct}%` }}
+                                className="bg-[#16A34A] h-full flex items-center justify-center text-white font-pixel text-[9px] truncate"
+                                title={`Present: ${stats.presentPct}% (${stats.present} logs)`}
+                              >
+                                {stats.presentPct >= 10 ? `${stats.presentPct}%` : ''}
+                              </div>
+                            )}
+
+                            {stats.excusedTardyPct > 0 && (
+                              <div
+                                style={{ width: `${stats.excusedTardyPct}%` }}
+                                className="bg-[#86EFAC] h-full flex items-center justify-center text-black font-pixel text-[9px] truncate"
+                                title={`Excused Tardy: ${stats.excusedTardyPct}% (${stats.excusedTardy} logs)`}
+                              >
+                                {stats.excusedTardyPct >= 10 ? `${stats.excusedTardyPct}%` : ''}
+                              </div>
+                            )}
+
+                            {stats.tardyPct > 0 && (
+                              <div
+                                style={{ width: `${stats.tardyPct}%` }}
+                                className="bg-[#FACC15] h-full flex items-center justify-center text-black font-pixel text-[9px] truncate"
+                                title={`Tardy: ${stats.tardyPct}% (${stats.tardy} logs)`}
+                              >
+                                {stats.tardyPct >= 10 ? `${stats.tardyPct}%` : ''}
+                              </div>
+                            )}
+
+                            {stats.excusedAbsencePct > 0 && (
+                              <div
+                                style={{ width: `${stats.excusedAbsencePct}%` }}
+                                className="bg-[#FB923C] h-full flex items-center justify-center text-black font-pixel text-[9px] truncate"
+                                title={`Excused Absence: ${stats.excusedAbsencePct}% (${stats.excusedAbsence} logs)`}
+                              >
+                                {stats.excusedAbsencePct >= 10 ? `${stats.excusedAbsencePct}%` : ''}
+                              </div>
+                            )}
+
+                            {stats.absencePct > 0 && (
+                              <div
+                                style={{ width: `${stats.absencePct}%` }}
+                                className="bg-[#DC2626] h-full flex items-center justify-center text-white font-pixel text-[9px] truncate"
+                                title={`Absence: ${stats.absencePct}% (${stats.absence} logs)`}
+                              >
+                                {stats.absencePct >= 10 ? `${stats.absencePct}%` : ''}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="w-full h-7 bg-slate-100 border border-slate-300 flex items-center justify-center font-serif italic text-xs text-slate-400">
+                            No attendance logs recorded yet
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Bottom Close Button */}
+              <div className="pt-3 text-right">
+                <button
+                  type="button"
+                  onClick={() => setShowHistoryModal(false)}
+                  className="bg-black text-white font-pixel text-xs py-2.5 px-6 border-2 border-black shadow-[2px_2px_0px_0px_#000] hover:bg-slate-800 cursor-pointer font-bold tracking-wider"
+                >
+                  CLOSE [X]
+                </button>
+              </div>
             </div>
           </div>
         </div>

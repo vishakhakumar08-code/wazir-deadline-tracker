@@ -267,6 +267,33 @@ export async function fetchAttendanceForDate(dateStr: string): Promise<SupabaseR
 export const fetchAttendanceFromSupabase = fetchAttendanceForDate;
 
 /**
+ * Fetch all attendance records across all dates
+ */
+export async function fetchAllAttendanceRecords(): Promise<SupabaseResponse<AttendanceRecord[]>> {
+  const client = getSupabaseClient();
+  if (!client) {
+    return { data: null, error: new Error('Supabase client is not configured') };
+  }
+
+  try {
+    const { data, error } = await client
+      .from('attendance')
+      .select('*')
+      .order('date', { ascending: false });
+
+    if (error) {
+      console.error('[Supabase fetch all attendance error]:', error);
+      return { data: null, error };
+    }
+
+    return { data: data || [], error: null };
+  } catch (err: any) {
+    console.error('[Supabase fetch all attendance exception]:', err);
+    return { data: null, error: err };
+  }
+}
+
+/**
  * Upsert single attendance record (on conflict: member_name, date)
  */
 export async function upsertAttendanceRecord(record: {
