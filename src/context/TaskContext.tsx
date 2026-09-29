@@ -5,6 +5,7 @@ import {
   Task,
   TaskFilterState,
   ViewMode,
+  AppScreen,
   TaskStatus,
   Assignee,
   Vertical,
@@ -36,6 +37,14 @@ interface TaskContextType {
   resetFilters: () => void;
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
+
+  // Screen Navigation
+  currentScreen: AppScreen;
+  setCurrentScreen: (screen: AppScreen) => void;
+  selectedMemberName: Assignee | null;
+  setSelectedMemberName: (member: Assignee | null) => void;
+  selectedCalendarDay: number | null;
+  setSelectedCalendarDay: (day: number | null) => void;
   
   // Real-time Supabase state
   isSupabaseConfigured: boolean;
@@ -106,6 +115,10 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filters, setFilters] = useState<TaskFilterState>(initialFilters);
   const [viewMode, setViewMode] = useState<ViewMode>('kanban');
+  const [currentScreen, setCurrentScreen] = useState<AppScreen>('home');
+  const [selectedMemberName, setSelectedMemberName] = useState<Assignee | null>('Vishakha');
+  const [selectedCalendarDay, setSelectedCalendarDay] = useState<number | null>(null);
+
   const [isSupabaseConfigured, setIsSupabaseConfigured] = useState(false);
   const [realtimeStatus, setRealtimeStatus] = useState<'SUBSCRIBED' | 'DISCONNECTED' | 'LOCAL_DEMO' | 'CONNECTING' | 'ERROR'>('CONNECTING');
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
@@ -316,7 +329,6 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { error } = await upsertMemberAvatarInSupabase(name, avatarUrl);
     if (error) {
       console.error('[Supabase member avatar update error]:', error);
-      // Still preserved locally
     }
     showToast(`Updated avatar for ${name}!`, 'success');
   }, [showToast]);
@@ -328,6 +340,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const resetFilters = () => {
     setFilters(initialFilters);
+    setSelectedCalendarDay(null);
   };
 
   // Open Create Modal with prefilled assignee
@@ -443,12 +456,22 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Filtered Tasks computation
   const filteredTasks = useMemo(() => {
     const result = tasks.filter((task) => {
-      // 1. Vertical filter
+      // 1. Calendar Date Filter
+      if (selectedCalendarDay !== null) {
+        const d = new Date(task.deadline);
+        if (!isNaN(d.getTime())) {
+          if (d.getDate() !== selectedCalendarDay) {
+            return false;
+          }
+        }
+      }
+
+      // 2. Vertical filter
       if (filters.vertical !== 'ALL' && task.vertical !== filters.vertical) {
         return false;
       }
 
-      // 2. Assignee filter
+      // 3. Assignee filter
       if (filters.assignee === 'UNASSIGNED') {
         if (task.assignees && task.assignees.length > 0) return false;
       } else if (filters.assignee !== 'ALL') {
@@ -457,17 +480,17 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
-      // 3. Priority filter
+      // 4. Priority filter
       if (filters.priority !== 'ALL' && task.priority !== filters.priority) {
         return false;
       }
 
-      // 4. Status filter
+      // 5. Status filter
       if (filters.status !== 'ALL' && task.status !== filters.status) {
         return false;
       }
 
-      // 5. Urgency / Deadline filter
+      // 6. Urgency / Deadline filter
       if (filters.urgency !== 'ALL') {
         const info = getDeadlineInfo(task.deadline, task.status);
         if (filters.urgency === 'overdue' && !info.isOverdue) return false;
@@ -475,7 +498,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (filters.urgency === 'upcoming' && !info.isUpcoming) return false;
       }
 
-      // 6. Search query
+      // 7. Search query
       if (filters.searchQuery.trim()) {
         const q = filters.searchQuery.toLowerCase();
         const matchesTitle = task.title.toLowerCase().includes(q);
@@ -492,7 +515,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     return sortTasksByDeadline(result);
-  }, [tasks, filters]);
+  }, [tasks, filters, selectedCalendarDay]);
 
   // Executive KPI Summary computation
   const stats = useMemo(() => {
@@ -584,6 +607,12 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         resetFilters,
         viewMode,
         setViewMode,
+        currentScreen,
+        setCurrentScreen,
+        selectedMemberName,
+        setSelectedMemberName,
+        selectedCalendarDay,
+        setSelectedCalendarDay,
         isSupabaseConfigured,
         realtimeStatus,
         lastSyncTime,

@@ -47,6 +47,13 @@ export interface Task {
 
 export type ViewMode = 'kanban' | 'matrix' | 'attendance';
 
+export type AppScreen =
+  | 'home'
+  | 'attendance'
+  | 'individual_search'
+  | 'individual_member'
+  | 'party_calendar';
+
 export interface TaskFilterState {
   vertical: Vertical | 'ALL';
   assignee: Assignee | 'ALL' | 'UNASSIGNED';

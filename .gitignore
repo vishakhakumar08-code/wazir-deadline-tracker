@@ -33,3 +33,18 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# python and scratch automation files
+.venv/
+__pycache__/
+*.py
+*.png
+!public/**
+*.json
+!package.json
+!tsconfig.json
+*.html
+chrome_session*/
+.chrome_user_data/
+screenshots*/
+

@@ -34,8 +34,14 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
-        heading: ["var(--font-outfit)", "system-ui", "sans-serif"],
+        pixel: ['"Press Start 2P"', '"Silkscreen"', 'monospace'],
+        serif: ['"Playfair Display"', 'Georgia', 'serif'],
+        sans: ['-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
+      },
+      boxShadow: {
+        brutal: '3px 3px 0px 0px #000000',
+        'brutal-lg': '4px 4px 0px 0px #000000',
+        'brutal-sm': '2px 2px 0px 0px #000000',
       },
       animation: {
         "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",

@@ -207,34 +207,22 @@ export const SqlSetupModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/40 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-3xl bg-white border-t md:border border-slate-200 rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] md:max-h-[calc(100vh-80px)] my-0 md:my-8 flex flex-col">
-        {/* Mobile Swipe Handle Indicator */}
-        <div className="md:hidden flex justify-center pt-2.5 pb-1 bg-slate-100">
-          <div className="w-12 h-1.5 rounded-full bg-slate-300" />
-        </div>
-
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5 border-b border-slate-100 bg-slate-50/70 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-              <Database className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-base sm:text-lg font-bold text-slate-900 font-heading flex items-center gap-2">
-                Supabase Real-Time Backend Setup
-              </h3>
-              <p className="text-xs text-slate-500">
-                SQL schema, Realtime publication &amp; Vercel deployment credentials
-              </p>
-            </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs overflow-y-auto">
+      <div className="relative w-full max-w-3xl bg-white border-2 md:border-[3px] border-black shadow-[6px_6px_0px_0px_#000000] overflow-hidden max-h-[90vh] my-4 flex flex-col">
+        {/* Retro Window Top Bar */}
+        <div className="bg-[#CBD5E1] border-b-2 border-black px-4 py-2 flex items-center justify-between font-pixel text-xs text-black font-bold shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 bg-black inline-block" />
+            <span className="tracking-wider">SUPABASE SQL SETUP &amp; SYNC</span>
           </div>
 
           <button
+            type="button"
             onClick={() => setIsSqlModalOpen(false)}
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            className="w-6 h-6 bg-white hover:bg-red-500 hover:text-white border-2 border-black flex items-center justify-center font-pixel text-xs text-black transition-colors cursor-pointer"
+            aria-label="Close modal"
           >
-            <X className="w-5 h-5" />
+            ✕
           </button>
         </div>
 

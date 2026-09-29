@@ -2,30 +2,29 @@
 
 import React from 'react';
 import { useTaskContext } from '@/context/TaskContext';
-import { Sidebar } from '@/components/Sidebar';
-import { Header } from '@/components/Header';
-import { SearchBar } from '@/components/SearchBar';
-import { StatsOverview } from '@/components/StatsOverview';
-import { FilterBar } from '@/components/FilterBar';
-import { KanbanBoard } from '@/components/KanbanBoard';
-import { MemberMatrix } from '@/components/MemberMatrix';
-import { AttendanceTracker } from '@/components/AttendanceTracker';
-import { MobileBottomNav } from '@/components/MobileBottomNav';
-import { TaskModal } from '@/components/TaskModal';
+import { ChessQueenLogo } from '@/components/ChessQueenLogo';
+import { InteractiveCalendar } from '@/components/InteractiveCalendar';
+import { RetroKanbanBoard } from '@/components/RetroKanbanBoard';
+import { AttendanceScreen } from '@/components/AttendanceScreen';
+import { IndividualTrackerSearch } from '@/components/IndividualTrackerSearch';
+import { IndividualMemberView } from '@/components/IndividualMemberView';
+import { PartyCalendarScreen } from '@/components/PartyCalendarScreen';
+import { RetroNewDeliverableModal } from '@/components/RetroNewDeliverableModal';
 import { TaskDetailModal } from '@/components/TaskDetailModal';
+import { EditAvatarModal } from '@/components/EditAvatarModal';
 import { SqlSetupModal } from '@/components/SqlSetupModal';
 import { ExportModal } from '@/components/ExportModal';
 import { CompletedArchiveModal } from '@/components/CompletedArchiveModal';
-import { EditAvatarModal } from '@/components/EditAvatarModal';
-import { CheckCircle2, AlertCircle, Info, AlertTriangle, Plus } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Info, AlertTriangle, Database, Download } from 'lucide-react';
 
 export default function Home() {
   const {
-    viewMode,
+    currentScreen,
     toast,
-    setIsCreateModalOpen,
     isArchiveModalOpen,
     setIsArchiveModalOpen,
+    setIsSqlModalOpen,
+    setIsExportModalOpen,
   } = useTaskContext();
 
   const getToastIcon = (type?: string) => {
@@ -41,68 +40,95 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F8FAFC] p-0 md:p-6 lg:p-8 flex justify-center items-start">
-      {/* Central Modern Light Dashboard Container */}
-      <div className="w-full max-w-7xl bg-white rounded-none md:rounded-3xl md:border md:border-slate-200/90 shadow-sm overflow-hidden flex flex-col md:flex-row min-h-screen md:min-h-[calc(100vh-64px)]">
-        {/* Desktop Left Sidebar */}
-        <Sidebar />
+    <main className="min-h-screen bg-white text-black p-4 sm:p-6 lg:p-8 flex flex-col items-center selection:bg-blue-200">
+      {/* Top Header Bar */}
+      <header className="w-full max-w-6xl flex items-center justify-between pb-6 sm:pb-8 relative">
+        {/* Top-Left Circular Royal Blue Badge with White Chess Queen Icon */}
+        <ChessQueenLogo />
 
-        {/* Main Content Area */}
-        <div className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto pb-24 md:pb-8">
-          {/* Top Header */}
-          <Header />
+        {/* Home Screen Title & Subtitle (Centered) */}
+        {currentScreen === 'home' && (
+          <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none sm:pointer-events-auto">
+            <h1 className="font-pixel text-2xl sm:text-4xl md:text-5xl text-black font-bold tracking-widest uppercase">
+              WAZIR
+            </h1>
+            <p className="font-serif italic text-base sm:text-xl text-slate-800 -mt-0.5 sm:mt-0">
+              keeping track
+            </p>
+          </div>
+        )}
 
-          {/* Mobile Global Search Bar (< md) */}
-          {viewMode !== 'attendance' && (
-            <div className="md:hidden mb-3.5">
-              <SearchBar placeholder="Search deliverables, verticals, or members..." />
-            </div>
-          )}
+        {/* Top-Right Quick Utility Buttons (SQL Schema & Export) */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsExportModalOpen(true)}
+            className="hidden sm:flex items-center gap-1.5 p-2 bg-white hover:bg-slate-100 text-black border-2 border-black font-pixel text-[10px] shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
+            title="Export Minutes of Meeting"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">EXPORT</span>
+          </button>
 
-          {/* KPI Stat Cards and Filter Bar (shown on Kanban and Matrix views) */}
-          {viewMode !== 'attendance' && (
-            <>
-              <StatsOverview />
-              <FilterBar />
-            </>
-          )}
-
-          {/* Active View Mode */}
-          {viewMode === 'kanban' && <KanbanBoard />}
-          {viewMode === 'matrix' && <MemberMatrix />}
-          {viewMode === 'attendance' && <AttendanceTracker />}
+          <button
+            type="button"
+            onClick={() => setIsSqlModalOpen(true)}
+            className="p-2 bg-white hover:bg-slate-100 text-black border-2 border-black font-pixel text-[10px] shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer flex items-center gap-1.5"
+            title="Supabase Connection & Schema"
+          >
+            <Database className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">SQL</span>
+          </button>
         </div>
+      </header>
+
+      {/* Main View Area with State-Based Routing */}
+      <div className="w-full max-w-6xl flex-1 flex flex-col justify-start">
+        {/* 1. HOME / MAIN BOARD VIEW */}
+        {currentScreen === 'home' && (
+          <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-2">
+            {/* Left Column: Interactive Calendar + Navigation */}
+            <div className="lg:col-span-4 flex justify-center lg:justify-start w-full">
+              <InteractiveCalendar />
+            </div>
+
+            {/* Right Column: 3-Column Kanban Board */}
+            <div className="lg:col-span-8 w-full">
+              <RetroKanbanBoard />
+            </div>
+          </div>
+        )}
+
+        {/* 2. ATTENDANCE TRACKER VIEW */}
+        {currentScreen === 'attendance' && <AttendanceScreen />}
+
+        {/* 3. INDIVIDUAL TRACKER SEARCH VIEW */}
+        {currentScreen === 'individual_search' && <IndividualTrackerSearch />}
+
+        {/* 4. INDIVIDUAL MEMBER RESULT VIEW */}
+        {currentScreen === 'individual_member' && <IndividualMemberView />}
+
+        {/* 5. PARTY CALENDAR / MEMORIES VIEW */}
+        {currentScreen === 'party_calendar' && <PartyCalendarScreen />}
       </div>
 
-      {/* Mobile Floating Action Button (FAB) for "+ New Deliverable" */}
-      <button
-        onClick={() => setIsCreateModalOpen(true)}
-        className="md:hidden fixed bottom-20 right-5 z-40 w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-xl shadow-blue-500/40 flex items-center justify-center active:scale-95 transition-transform cursor-pointer"
-        aria-label="Create New Deliverable"
-      >
-        <Plus className="w-7 h-7 stroke-[2.5]" />
-      </button>
-
-      {/* Mobile Bottom Navigation Bar */}
-      <MobileBottomNav />
-
-      {/* Modals & Dialogs */}
-      <TaskModal />
+      {/* Modals & Popups */}
+      <RetroNewDeliverableModal />
       <TaskDetailModal />
+      <EditAvatarModal />
       <SqlSetupModal />
       <ExportModal />
       <CompletedArchiveModal
         isOpen={isArchiveModalOpen}
         onClose={() => setIsArchiveModalOpen(false)}
       />
-      <EditAvatarModal />
 
-      {/* Toast Notifications */}
+      {/* Retro Toast Notifications */}
       {toast && (
-        <div className="fixed bottom-24 md:bottom-8 right-4 sm:right-8 z-50 animate-bounce transition-all">
-          <div className="flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-white border border-slate-200 shadow-xl text-xs font-semibold text-slate-800 backdrop-blur-md max-w-[90vw]">
+        <div className="fixed bottom-6 right-6 z-50 animate-bounce">
+          <div className="flex items-center gap-2.5 px-4 py-3 bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000000] text-xs font-serif font-bold text-black max-w-[90vw]">
             {getToastIcon(toast.type)}
-            <span className="truncate">{toast.message}</span>
+            <span>{toast.message}</span>
           </div>
         </div>
       )}
