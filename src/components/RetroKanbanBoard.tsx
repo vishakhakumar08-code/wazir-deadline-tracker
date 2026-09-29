@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useTaskContext } from '@/context/TaskContext';
-import { VERTICALS } from '@/lib/constants';
+import { VERTICALS, getVerticalBadgeInfo } from '@/lib/constants';
 import { Task, TaskStatus } from '@/types/task';
 import { Plus } from 'lucide-react';
 
@@ -61,13 +61,12 @@ export const RetroKanbanBoard: React.FC<{ memberFilter?: string }> = ({ memberFi
     : filteredTasks;
 
   const getVerticalBadge = (verticalName: string) => {
-    const v = VERTICALS.find((item) => item.id === verticalName);
-    if (!v) return null;
+    const badgeInfo = getVerticalBadgeInfo(verticalName);
     return (
       <span
-        className={`px-2 py-0.5 rounded-full text-[11px] font-sans font-medium tracking-tight ${v.pillBg} ${v.pillText}`}
+        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-serif lowercase ${badgeInfo.className}`}
       >
-        {v.tag}
+        {badgeInfo.tag}
       </span>
     );
   };

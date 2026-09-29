@@ -14,63 +14,137 @@ export const VERTICALS: {
     id: 'Editorial',
     label: 'Editorial',
     tag: 'editorial',
-    color: '#0284c7',
-    pillBg: 'bg-[#E0F2FE]',
-    pillText: 'text-[#0369A1]',
-    badge: 'bg-[#E0F2FE] text-[#0369A1] border border-[#BAE6FD]',
+    color: '#059669',
+    pillBg: 'bg-[#DCFCE7]',
+    pillText: 'text-emerald-900',
+    badge: 'bg-[#DCFCE7] text-emerald-900 border border-[#BBF7D0]',
     description: 'Newsletters, op-eds, research articles & publications',
   },
   {
     id: 'Public Relations',
     label: 'Public Relations',
     tag: 'pr',
-    color: '#f59e0b',
-    pillBg: 'bg-[#FED7AA]',
-    pillText: 'text-[#9A3412]',
-    badge: 'bg-[#FED7AA] text-[#9A3412] border border-[#FDBA74]',
+    color: '#7c3aed',
+    pillBg: 'bg-[#F3E8FF]',
+    pillText: 'text-purple-900',
+    badge: 'bg-[#F3E8FF] text-purple-900 border border-[#E9D5FF]',
     description: 'Social media, branding, LinkedIn campaigns & press',
   },
   {
     id: 'Events',
     label: 'Events',
     tag: 'events',
-    color: '#16a34a',
-    pillBg: 'bg-[#DCFCE7]',
-    pillText: 'text-[#15803D]',
-    badge: 'bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0]',
+    color: '#d97706',
+    pillBg: 'bg-[#FFEDD5]',
+    pillText: 'text-amber-900',
+    badge: 'bg-[#FFEDD5] text-amber-900 border border-[#FED7AA]',
     description: 'Workshops, guest speaker sessions, campus conclaves',
-  },
-  {
-    id: 'Casebook',
-    label: 'Casebook',
-    tag: 'casebook',
-    color: '#e11d48',
-    pillBg: 'bg-[#FFE4E6]',
-    pillText: 'text-[#BE123C]',
-    badge: 'bg-[#FFE4E6] text-[#BE123C] border border-[#FECDD3]',
-    description: 'Annual casebook curation, sector decks & interview prep',
   },
   {
     id: 'Apex',
     label: 'Apex',
     tag: 'apex',
-    color: '#9333ea',
-    pillBg: 'bg-[#F3E8FF]',
-    pillText: 'text-[#7E22CE]',
-    badge: 'bg-[#F3E8FF] text-[#7E22CE] border border-[#E9D5FF]',
+    color: '#0284c7',
+    pillBg: 'bg-[#E0F2FE]',
+    pillText: 'text-sky-900',
+    badge: 'bg-[#E0F2FE] text-sky-900 border border-[#BAE6FD]',
     description: 'Flagship national consulting case competition',
+  },
+  {
+    id: 'Casebook',
+    label: 'Casebook',
+    tag: 'casebook',
+    color: '#db2777',
+    pillBg: 'bg-[#FCE7F3]',
+    pillText: 'text-pink-900',
+    badge: 'bg-[#FCE7F3] text-pink-900 border border-[#FBCFE8]',
+    description: 'Annual casebook curation, sector decks & interview prep',
   },
   {
     id: 'External Relations',
     label: 'External Relations',
     tag: 'er',
-    color: '#ea580c',
-    pillBg: 'bg-[#FFEDD5]',
-    pillText: 'text-[#C2410C]',
-    badge: 'bg-[#FFEDD5] text-[#C2410C] border border-[#FED7AA]',
+    color: '#ca8a04',
+    pillBg: 'bg-[#FEF9C3]',
+    pillText: 'text-yellow-900',
+    badge: 'bg-[#FEF9C3] text-yellow-900 border border-[#FEF08A]',
     description: 'Corporate partnerships, sponsorships & alumni network',
   },
 ];
+
+export interface VerticalBadgeInfo {
+  tag: string;
+  className: string;
+  pillBg: string;
+  pillText: string;
+}
+
+export const getVerticalBadgeInfo = (verticalName?: string): VerticalBadgeInfo => {
+  if (!verticalName) {
+    return {
+      tag: 'editorial',
+      className: 'bg-[#DCFCE7] text-emerald-900 border border-[#BBF7D0]',
+      pillBg: 'bg-[#DCFCE7]',
+      pillText: 'text-emerald-900',
+    };
+  }
+
+  const normalized = verticalName.trim().toLowerCase();
+
+  switch (normalized) {
+    case 'editorial':
+      return {
+        tag: 'editorial',
+        className: 'bg-[#DCFCE7] text-emerald-900 border border-[#BBF7D0]',
+        pillBg: 'bg-[#DCFCE7]',
+        pillText: 'text-emerald-900',
+      };
+    case 'pr':
+    case 'public relations':
+      return {
+        tag: 'pr',
+        className: 'bg-[#F3E8FF] text-purple-900 border border-[#E9D5FF]',
+        pillBg: 'bg-[#F3E8FF]',
+        pillText: 'text-purple-900',
+      };
+    case 'events':
+      return {
+        tag: 'events',
+        className: 'bg-[#FFEDD5] text-amber-900 border border-[#FED7AA]',
+        pillBg: 'bg-[#FFEDD5]',
+        pillText: 'text-amber-900',
+      };
+    case 'apex':
+      return {
+        tag: 'apex',
+        className: 'bg-[#E0F2FE] text-sky-900 border border-[#BAE6FD]',
+        pillBg: 'bg-[#E0F2FE]',
+        pillText: 'text-sky-900',
+      };
+    case 'casebook':
+      return {
+        tag: 'casebook',
+        className: 'bg-[#FCE7F3] text-pink-900 border border-[#FBCFE8]',
+        pillBg: 'bg-[#FCE7F3]',
+        pillText: 'text-pink-900',
+      };
+    case 'er':
+    case 'external relations':
+      return {
+        tag: 'er',
+        className: 'bg-[#FEF9C3] text-yellow-900 border border-[#FEF08A]',
+        pillBg: 'bg-[#FEF9C3]',
+        pillText: 'text-yellow-900',
+      };
+    default:
+      return {
+        tag: normalized,
+        className: 'bg-slate-100 text-slate-800 border border-slate-300',
+        pillBg: 'bg-slate-100',
+        pillText: 'text-slate-800',
+      };
+  }
+};
 
 export const ASSIGNEES: {
   name: Assignee;
