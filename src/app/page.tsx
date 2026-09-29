@@ -47,7 +47,7 @@ export default function Home() {
         <ChessQueenLogo />
 
         {/* Home Screen Title & Subtitle (Centered) */}
-        {currentScreen === 'home' && (
+        {currentScreen === 'home' ? (
           <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none sm:pointer-events-auto pt-2 sm:pt-3 mt-1 sm:mt-1.5">
             <h1 className="font-pixel text-2xl sm:text-4xl md:text-5xl text-black font-bold tracking-widest uppercase">
               WAZIR
@@ -55,6 +55,41 @@ export default function Home() {
             <p className="font-serif not-italic font-normal text-black text-base sm:text-xl -mt-0.5 sm:mt-0">
               keeping track
             </p>
+          </div>
+        ) : (
+          /* Non-Home Screens (Individual Tracker, Attendance, Party Calendar): Top Sub-Navigation Row */
+          <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center gap-2 sm:gap-3 max-w-[calc(100%-140px)] sm:max-w-none overflow-x-auto sm:overflow-visible">
+            <button
+              type="button"
+              onClick={() => setCurrentScreen('attendance')}
+              className={`font-pixel text-[9px] sm:text-xs px-2.5 sm:px-4 py-2 sm:py-2.5 border-2 border-black shadow-[2px_2px_0px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer tracking-wider whitespace-nowrap font-bold ${
+                currentScreen === 'attendance'
+                  ? 'bg-black text-white hover:bg-slate-800'
+                  : 'bg-black text-white hover:bg-slate-800'
+              }`}
+            >
+              ATTENDANCE TRACKER
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setCurrentScreen('home')}
+              className="bg-black text-white font-pixel text-[9px] sm:text-xs px-2.5 sm:px-4 py-2 sm:py-2.5 border-2 border-black shadow-[2px_2px_0px_0px_#000000] hover:bg-slate-800 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer tracking-wider whitespace-nowrap font-bold"
+            >
+              DEADLINE TRACKER
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setCurrentScreen('party_calendar')}
+              className={`font-pixel text-[9px] sm:text-xs px-2.5 sm:px-4 py-2 sm:py-2.5 border-2 border-black shadow-[2px_2px_0px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer tracking-wider whitespace-nowrap font-bold ${
+                currentScreen === 'party_calendar'
+                  ? 'bg-black text-white hover:bg-slate-800'
+                  : 'bg-black text-white hover:bg-slate-800'
+              }`}
+            >
+              PARTY CALENDAR
+            </button>
           </div>
         )}
 

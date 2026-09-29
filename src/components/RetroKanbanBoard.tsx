@@ -72,7 +72,7 @@ export const RetroKanbanBoard: React.FC<{ memberFilter?: string }> = ({ memberFi
   };
 
   return (
-    <div className="w-full flex flex-col items-center">
+    <div className="w-full relative mb-8 flex flex-col items-center">
       {/* 3-Column Kanban Board Grid */}
       <div className="w-full grid grid-cols-1 md:grid-cols-3 border-2 md:border-[3px] border-black bg-white shadow-[4px_4px_0px_0px_#000000]">
         {COLUMNS.map((column, colIdx) => {
@@ -109,7 +109,7 @@ export const RetroKanbanBoard: React.FC<{ memberFilter?: string }> = ({ memberFi
               </div>
 
               {/* Tasks List */}
-              <div className="flex-1 p-4 sm:p-5 space-y-4 overflow-y-auto">
+              <div className="flex-1 p-4 sm:p-5 space-y-4 overflow-y-auto pb-8 sm:pb-10">
                 {visibleTasks.length === 0 ? (
                   <div className="py-12 text-center">
                     <p className="font-serif italic text-sm text-slate-400">
@@ -170,8 +170,8 @@ export const RetroKanbanBoard: React.FC<{ memberFilter?: string }> = ({ memberFi
 
                               if (isFullTeam) {
                                 return (
-                                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-pixel bg-slate-100 text-slate-800 border border-slate-300">
-                                    TEAM
+                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-[#F1F5F9] text-slate-800 border border-[#CBD5E1]">
+                                    Team
                                   </span>
                                 );
                               }
@@ -219,16 +219,14 @@ export const RetroKanbanBoard: React.FC<{ memberFilter?: string }> = ({ memberFi
         })}
       </div>
 
-      {/* Centered "+ ADD NEW" Button */}
-      <div className="mt-6 flex justify-center">
-        <button
-          type="button"
-          onClick={() => setIsCreateModalOpen(true)}
-          className="bg-black text-white font-pixel text-xs sm:text-sm py-3 px-8 border-2 border-black shadow-[4px_4px_0px_0px_#000000] hover:bg-slate-800 active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer tracking-wider font-bold"
-        >
-          <span>+ ADD NEW</span>
-        </button>
-      </div>
+      {/* Centered "+ ADD NEW" Button Straddling Lower Border */}
+      <button
+        type="button"
+        onClick={() => setIsCreateModalOpen(true)}
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-20 bg-black text-white font-pixel text-xs sm:text-sm py-2.5 sm:py-3 px-6 sm:px-8 border-2 border-black shadow-[3px_3px_0px_0px_#000000] hover:bg-slate-800 active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer tracking-wider font-bold whitespace-nowrap"
+      >
+        <span>+ ADD NEW</span>
+      </button>
     </div>
   );
 };

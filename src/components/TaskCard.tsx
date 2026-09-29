@@ -66,8 +66,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onDragStart }) => {
 
           if (isFullTeam) {
             return (
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-pixel bg-slate-100 text-slate-800 border border-slate-300">
-                TEAM
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-[#F1F5F9] text-slate-800 border border-[#CBD5E1]">
+                Team
               </span>
             );
           }

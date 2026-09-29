@@ -11,7 +11,7 @@ export const ChessQueenLogo: React.FC<{ className?: string }> = ({ className = '
       type="button"
       onClick={() => setCurrentScreen('home')}
       title="WAZIR - Back to Home Board"
-      className={`group w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#1e3a8a] text-white flex items-center justify-center border-2 border-black shadow-[3px_3px_0px_0px_#000000] hover:scale-105 active:scale-95 transition-transform cursor-pointer shrink-0 z-30 ${className}`}
+      className={`group w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-black text-white flex items-center justify-center border-2 border-black shadow-[2px_2px_0px_0px_#000000] hover:scale-105 active:scale-95 transition-transform cursor-pointer shrink-0 z-30 ${className}`}
       aria-label="Return to Home"
     >
       <svg
