@@ -20,6 +20,7 @@ import { CheckCircle2, AlertCircle, Info, AlertTriangle, Database, Download } fr
 export default function Home() {
   const {
     currentScreen,
+    setCurrentScreen,
     toast,
     isArchiveModalOpen,
     setIsArchiveModalOpen,
