@@ -195,9 +195,6 @@ export const TaskDetailModal: React.FC = () => {
             )}
           </div>
         </div>
-            </button>
-          </div>
-        </div>
 
         {/* Modal Content */}
         <div className="p-5 sm:p-6 space-y-5 overflow-y-auto scrollbar-thin">
