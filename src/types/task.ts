@@ -41,6 +41,7 @@ export interface Task {
   deadline: string; // ISO 8601 string
   subtasks: SubTask[];
   resources?: string[];
+  is_full_team?: boolean;
   created_at?: string;
   updated_at?: string;
 }

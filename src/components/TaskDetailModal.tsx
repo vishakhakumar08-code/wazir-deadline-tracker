@@ -85,6 +85,7 @@ export const TaskDetailModal: React.FC = () => {
       status,
       deadline: new Date(deadline).toISOString(),
       assignees: finalAssignees,
+      is_full_team: isFullTeam,
     });
 
     setSelectedTask(null);

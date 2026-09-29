@@ -242,21 +242,39 @@ export const CompletedArchiveModal: React.FC<CompletedArchiveModalProps> = ({
                     )}
 
                     {/* Assignee Avatars */}
-                    {task.assignees && task.assignees.length > 0 ? (
-                      <div className="flex -space-x-1.5">
-                        {task.assignees.map((aName) => (
-                          <MemberAvatar
-                            key={aName}
-                            name={aName}
-                            size="xs"
-                            showTooltip={true}
-                            className="ring-1 ring-white"
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-[11px] text-slate-400 italic">Unassigned</span>
-                    )}
+                    {(() => {
+                      const isFullTeam =
+                        task.is_full_team === true ||
+                        (task.assignees &&
+                          (task.assignees.length >= 10 ||
+                            (task.assignees.length >= ASSIGNEES.length && ASSIGNEES.length > 0)));
+
+                      if (isFullTeam) {
+                        return (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-pixel bg-slate-100 text-slate-800 border border-slate-300">
+                            TEAM
+                          </span>
+                        );
+                      }
+
+                      if (task.assignees && task.assignees.length > 0) {
+                        return (
+                          <div className="flex -space-x-1.5">
+                            {task.assignees.map((aName) => (
+                              <MemberAvatar
+                                key={aName}
+                                name={aName}
+                                size="xs"
+                                showTooltip={true}
+                                className="ring-1 ring-white"
+                              />
+                            ))}
+                          </div>
+                        );
+                      }
+
+                      return <span className="text-[11px] text-slate-400 italic">Unassigned</span>;
+                    })()}
 
                     <span className="text-xs text-blue-600 group-hover:translate-x-0.5 transition-transform hidden sm:inline font-semibold">
                       View →

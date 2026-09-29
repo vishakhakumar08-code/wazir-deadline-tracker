@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useTaskContext } from '@/context/TaskContext';
-import { VERTICALS, getVerticalBadgeInfo } from '@/lib/constants';
+import { VERTICALS, ASSIGNEES, getVerticalBadgeInfo } from '@/lib/constants';
 import { Task, TaskStatus } from '@/types/task';
 import { Plus } from 'lucide-react';
 
@@ -57,7 +57,7 @@ export const RetroKanbanBoard: React.FC<{ memberFilter?: string }> = ({ memberFi
   };
 
   const currentTasks = memberFilter
-    ? tasks.filter((t) => t.assignees && t.assignees.includes(memberFilter as any))
+    ? tasks.filter((t) => t.is_full_team || (t.assignees && (t.assignees.includes(memberFilter as any) || t.assignees.length >= 10)))
     : filteredTasks;
 
   const getVerticalBadge = (verticalName: string) => {
@@ -161,19 +161,39 @@ export const RetroKanbanBoard: React.FC<{ memberFilter?: string }> = ({ memberFi
                           <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
                             {getVerticalBadge(task.vertical)}
 
-                            {task.assignees && task.assignees.length > 0 && (
-                              <div className="flex flex-wrap items-center gap-1">
-                                {task.assignees.map((assigneeName) => (
-                                  <span
-                                    key={assigneeName}
-                                    title={assigneeName}
-                                    className="text-[10px] font-sans font-bold text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-300 shadow-[1px_1px_0px_0px_rgba(0,0,0,0.06)]"
-                                  >
-                                    {assigneeName.slice(0, 2).toUpperCase()}
+                            {(() => {
+                              const isFullTeam =
+                                task.is_full_team === true ||
+                                (task.assignees &&
+                                  (task.assignees.length >= 10 ||
+                                    (task.assignees.length >= ASSIGNEES.length && ASSIGNEES.length > 0)));
+
+                              if (isFullTeam) {
+                                return (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-pixel bg-slate-100 text-slate-800 border border-slate-300">
+                                    TEAM
                                   </span>
-                                ))}
-                              </div>
-                            )}
+                                );
+                              }
+
+                              if (task.assignees && task.assignees.length > 0) {
+                                return (
+                                  <div className="flex flex-wrap items-center gap-1">
+                                    {task.assignees.map((assigneeName) => (
+                                      <span
+                                        key={assigneeName}
+                                        title={assigneeName}
+                                        className="text-[10px] font-sans font-bold text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-300 shadow-[1px_1px_0px_0px_rgba(0,0,0,0.06)]"
+                                      >
+                                        {assigneeName.slice(0, 2).toUpperCase()}
+                                      </span>
+                                    ))}
+                                  </div>
+                                );
+                              }
+
+                              return null;
+                            })()}
                           </div>
                         </div>
                       </div>
