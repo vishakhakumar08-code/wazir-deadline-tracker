@@ -14,6 +14,8 @@ export const IndividualMemberView: React.FC = () => {
     setCurrentScreen,
     getMemberAvatar,
     setEditingMemberForAvatar,
+    updateMemberAvatar,
+    showToast,
   } = useTaskContext();
 
   const currentMember = selectedMemberName || 'Vishakha';
