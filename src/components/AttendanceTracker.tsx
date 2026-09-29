@@ -398,12 +398,16 @@ export const AttendanceTracker: React.FC = () => {
                         onClick={() => handleSetStatus(assignee.name, statusItem.id)}
                         className={`py-2.5 px-2 sm:px-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 border cursor-pointer min-h-[44px] ${
                           isSelected
-                            ? `${statusItem.buttonActive} ring-2 ring-blue-500/20`
+                            ? `${statusItem.activeBg} ${statusItem.activeText} ${statusItem.activeBorder} shadow-sm ring-2 ring-blue-500/20`
                             : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300'
                         }`}
                         title={statusItem.description}
                       >
-                        <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : statusItem.dotColor}`} />
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            isSelected ? 'bg-white' : 'bg-slate-400'
+                          }`}
+                        />
                         <span>{statusItem.label}</span>
                       </button>
                     );
