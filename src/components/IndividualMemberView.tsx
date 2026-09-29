@@ -42,13 +42,36 @@ export const IndividualMemberView: React.FC = () => {
     setSelectedMemberName(ASSIGNEES[prevIndex].name);
   };
 
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  const handleDirectFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      showToast('Please select an image smaller than 2MB', 'warning');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const dataUrl = event.target?.result as string;
+      if (dataUrl) {
+        await updateMemberAvatar(currentMember, dataUrl);
+        showToast(`Photo for ${currentMember} updated!`, 'success');
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
   return (
     <div className="w-full max-w-6xl mx-auto space-y-8 pb-12">
       {/* Top Header / Back & Switcher */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-black pb-3">
         <button
           onClick={() => setCurrentScreen('individual_search')}
-          className="flex items-center gap-1.5 font-pixel text-xs text-black hover:underline cursor-pointer"
+          className="flex items-center gap-1.5 font-pixel text-xs text-black hover:underline cursor-pointer font-bold"
         >
           <span>&lt;- ALL MEMBERS</span>
         </button>
@@ -65,7 +88,7 @@ export const IndividualMemberView: React.FC = () => {
           <select
             value={currentMember}
             onChange={(e) => setSelectedMemberName(e.target.value as Assignee)}
-            className="bg-white border-2 border-black px-3 py-1 font-pixel text-xs text-black focus:outline-none shadow-[2px_2px_0px_0px_#000] cursor-pointer"
+            className="bg-white border-2 border-black px-3 py-1 font-pixel text-xs text-black focus:outline-none shadow-[2px_2px_0px_0px_#000] cursor-pointer font-bold"
           >
             {ASSIGNEES.map((a) => (
               <option key={a.name} value={a.name}>
@@ -83,6 +106,15 @@ export const IndividualMemberView: React.FC = () => {
         </div>
       </div>
 
+      {/* Hidden File Input for Direct Upload */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept="image/*"
+        onChange={handleDirectFileUpload}
+        className="hidden"
+      />
+
       {/* Main Content Layout: Left Cutout Photo + Right Kanban */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column: Member Photo Cutout & Black Name Badge */}
@@ -90,17 +122,17 @@ export const IndividualMemberView: React.FC = () => {
           <div className="relative group w-full max-w-[260px] flex flex-col items-center">
             {/* Cutout Photo / Avatar */}
             <div className="w-56 h-64 sm:w-64 sm:h-72 flex items-center justify-center overflow-hidden">
-              {currentMember === 'Vishakha' ? (
-                <img
-                  src="/images/vishakha_cutout.png"
-                  alt="Vishakha"
-                  className="w-full h-full object-contain drop-shadow-md"
-                />
-              ) : customAvatar ? (
+              {customAvatar ? (
                 <img
                   src={customAvatar}
                   alt={currentMember}
                   className="w-48 h-48 sm:w-56 sm:h-56 object-cover rounded-full border-4 border-black shadow-[4px_4px_0px_0px_#000000]"
+                />
+              ) : currentMember === 'Vishakha' ? (
+                <img
+                  src="/images/vishakha_cutout.png"
+                  alt="Vishakha"
+                  className="w-full h-full object-contain drop-shadow-md"
                 />
               ) : (
                 <div
@@ -114,14 +146,26 @@ export const IndividualMemberView: React.FC = () => {
             </div>
 
             {/* Change Photo Trigger */}
-            <button
-              type="button"
-              onClick={() => setEditingMemberForAvatar(currentMember)}
-              className="mt-2 text-xs font-pixel text-slate-600 hover:text-black flex items-center gap-1.5 hover:underline cursor-pointer"
-            >
-              <Camera className="w-3.5 h-3.5" />
-              <span>EDIT PHOTO</span>
-            </button>
+            <div className="flex items-center gap-2 mt-2">
+              <button
+                type="button"
+                onClick={() => setEditingMemberForAvatar(currentMember)}
+                className="text-xs font-pixel text-slate-700 hover:text-black flex items-center gap-1.5 hover:underline cursor-pointer bg-white px-2.5 py-1 border border-black shadow-[1px_1px_0px_0px_#000]"
+                title="Edit avatar with presets, upload, or URL"
+              >
+                <Camera className="w-3.5 h-3.5" />
+                <span>EDIT PHOTO</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="text-xs font-pixel text-slate-700 hover:text-black flex items-center gap-1 hover:underline cursor-pointer bg-amber-100 px-2 py-1 border border-black shadow-[1px_1px_0px_0px_#000]"
+                title="Quick upload from device"
+              >
+                <span>UPLOAD</span>
+              </button>
+            </div>
 
             {/* Solid Black Badge Box Reading Name in White Pixel Font */}
             <div className="w-full bg-black text-white border-2 md:border-[3px] border-black py-2.5 px-4 text-center mt-3 shadow-[4px_4px_0px_0px_#000000]">

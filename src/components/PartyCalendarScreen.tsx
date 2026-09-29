@@ -124,24 +124,27 @@ export const PartyCalendarScreen: React.FC = () => {
       </div>
 
       {/* Sub-Navigation Buttons */}
-      <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+      <div className="flex flex-row flex-nowrap items-center justify-center gap-3 sm:gap-4 w-full overflow-x-auto pt-2">
         <button
+          type="button"
           onClick={() => setCurrentScreen('home')}
-          className="bg-black text-white font-pixel text-xs py-3 px-5 border-2 border-black shadow-[3px_3px_0px_0px_#000000] hover:bg-slate-800 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer tracking-wider"
+          className="bg-black text-white font-pixel text-[10px] sm:text-xs px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-black shadow-[3px_3px_0px_0px_#000000] hover:bg-slate-800 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer tracking-wider whitespace-nowrap font-bold"
         >
           DEADLINE TRACKER
         </button>
 
         <button
+          type="button"
           onClick={() => setCurrentScreen('attendance')}
-          className="bg-black text-white font-pixel text-xs py-3 px-5 border-2 border-black shadow-[3px_3px_0px_0px_#000000] hover:bg-slate-800 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer tracking-wider"
+          className="bg-black text-white font-pixel text-[10px] sm:text-xs px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-black shadow-[3px_3px_0px_0px_#000000] hover:bg-slate-800 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer tracking-wider whitespace-nowrap font-bold"
         >
           ATTENDANCE TRACKER
         </button>
 
         <button
+          type="button"
           onClick={() => setCurrentScreen('individual_search')}
-          className="bg-black text-white font-pixel text-xs py-3 px-5 border-2 border-black shadow-[3px_3px_0px_0px_#000000] hover:bg-slate-800 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer tracking-wider"
+          className="bg-black text-white font-pixel text-[10px] sm:text-xs px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-black shadow-[3px_3px_0px_0px_#000000] hover:bg-slate-800 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer tracking-wider whitespace-nowrap font-bold"
         >
           INDIVIDUAL TASKS
         </button>

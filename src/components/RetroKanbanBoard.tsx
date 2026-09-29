@@ -87,9 +87,9 @@ export const RetroKanbanBoard: React.FC<{ memberFilter?: string }> = ({ memberFi
           });
 
           const isExpanded = expandedColumns[column.id];
-          const displayLimit = isExpanded ? colTasks.length : 6;
+          const displayLimit = isExpanded ? colTasks.length : 5;
           const visibleTasks = colTasks.slice(0, displayLimit);
-          const hasMore = colTasks.length > 6;
+          const hasMore = colTasks.length > 5;
           const isLastCol = colIdx === COLUMNS.length - 1;
 
           return (
@@ -204,9 +204,8 @@ export const RetroKanbanBoard: React.FC<{ memberFilter?: string }> = ({ memberFi
         <button
           type="button"
           onClick={() => setIsCreateModalOpen(true)}
-          className="bg-black text-white font-pixel text-xs sm:text-sm py-3 px-8 border-2 border-black shadow-[4px_4px_0px_0px_#000000] hover:bg-slate-800 active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer tracking-wider"
+          className="bg-black text-white font-pixel text-xs sm:text-sm py-3 px-8 border-2 border-black shadow-[4px_4px_0px_0px_#000000] hover:bg-slate-800 active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer tracking-wider font-bold"
         >
-          <Plus className="w-4 h-4 stroke-[3]" />
           <span>+ ADD NEW</span>
         </button>
       </div>

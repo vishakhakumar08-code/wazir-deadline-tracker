@@ -529,6 +529,18 @@ export async function upsertMemberAvatarInSupabase(
       updated_at: new Date().toISOString(),
     };
 
+    // 1. Try direct update matching name (case-insensitive)
+    const { data: updatedRows, error: updateError } = await client
+      .from('members')
+      .update({ avatar_url: avatarUrl, updated_at: new Date().toISOString() })
+      .ilike('name', name)
+      .select();
+
+    if (!updateError && updatedRows && updatedRows.length > 0) {
+      return { data: updatedRows[0], error: null };
+    }
+
+    // 2. Fallback to upsert onConflict: name
     const { data, error } = await client
       .from('members')
       .upsert(payload, { onConflict: 'name' })
